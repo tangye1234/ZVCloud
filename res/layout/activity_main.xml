@@ -1,0 +1,135 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res/com.zigvine.zagriculture"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bg_blue"
+    tools:context=".MainActivity" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/footer_height"
+        android:paddingTop="@dimen/title_height" >
+
+        <org.taptwo.android.widget.ViewFlow
+            android:id="@+id/pages"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:autoflow="false"
+            app:sidebuffer="4" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/custom_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="@drawable/titlebar"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/title_height"
+            android:gravity="center"
+            android:drawableLeft="@drawable/menu_icon"
+            android:text="@string/hello_world"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#ff9000"
+            android:paddingRight="10dp"
+            android:background="@drawable/title_btn" />
+        
+        <View
+            android:layout_width="0dp"
+            android:layout_height="@dimen/title_height"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/more_menu"
+            android:layout_width="@dimen/title_height"
+            android:layout_height="@dimen/title_height"
+            android:background="@drawable/title_btn"
+            android:contentDescription="@string/more_menu"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_menu_overflow" />
+        
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/custom_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bottomtab" >
+
+        <LinearLayout
+            android:id="@+id/footer_content"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/footer_height"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/monitor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/monitor_select"
+                android:gravity="center"
+                android:text="@string/monitor"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#ffffff" />
+
+            <TextView
+                android:id="@+id/control"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/control"
+                android:gravity="center"
+                android:text="@string/control"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#99ffffff" />
+
+            <TextView
+                android:id="@+id/graph"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/graph"
+                android:gravity="center"
+                android:text="@string/graph"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#99ffffff" />
+
+            <TextView
+                android:id="@+id/alarm"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/alarm"
+                android:gravity="center"
+                android:text="@string/alarm"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#99ffffff" />
+        </LinearLayout>
+
+        <org.taptwo.android.widget.SimpleFlowIndicator
+            android:id="@+id/indic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:paddingBottom="0dp"
+            app:activeColor="#ff9000"
+            app:fadeOut="0"
+            app:gap="1dp"
+            app:height="2dp"
+            app:inactiveColor="#33bababa"
+            app:inactiveType="fill"
+            app:type="square"
+            app:width="50dp" />
+    </FrameLayout>
+
+</FrameLayout>

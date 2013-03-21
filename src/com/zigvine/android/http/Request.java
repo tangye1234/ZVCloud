@@ -1,0 +1,312 @@
+package com.zigvine.android.http;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLPeerUnverifiedException;
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.os.Handler;
+import android.util.Log;
+
+public class Request {
+	
+	public static final boolean DBG = true; /* FIXME set to false to avoid info leaks */
+	public static final String TAG = Request.class.getSimpleName();
+	public static final String URL;
+	static {
+		if (DBG) {
+			URL = "http://218.246.112.92/dservice";
+		} else {
+			URL = "http://qwerty";
+		}
+	}
+	
+	
+	public static final String Verify = "/verify";
+	public static final String GetGroupList = "/getgrouplist";
+	public static final String SnapShotData = "/snapshotdata";
+	
+	private HttpManager httpManager;
+	private HttpRequestBase httpRequest;
+	private String errorMsg = null;
+	private List<BasicNameValuePair> params;
+	private JSONObject requestJson;
+	private String path;
+	private Resp resp;
+	private int httpStatusCode;
+	private volatile boolean ignoreException;
+	private boolean isGetRequest;
+	
+	public static class Resp /**FIXME serialized ?**/ {
+		public JSONObject json;
+		public Date time;
+		public boolean success;
+		public int statusCode;
+		public Resp(JSONObject jSon) {
+			json = jSon;
+			time = new Date();
+			try {
+				statusCode = -1;
+				statusCode = json.getInt("Status");
+			} catch (JSONException e) {}
+			success = statusCode == 0;
+		}
+	}
+	
+	public Request(String uri_path) {
+		this(uri_path, false);
+	}
+	
+	public Request(String uri_path, boolean isGet) {
+		httpManager = HttpManager.getMessageManager();
+		isGetRequest = isGet;
+		if (isGetRequest) {
+			httpRequest = new HttpGet();
+		} else {
+			httpRequest = new HttpPost();
+		}
+		path = uri_path;
+		ignoreException = false;
+		params = new ArrayList<BasicNameValuePair>();
+	}
+	
+	public boolean request() throws JSONException {
+		return request(URL);
+	}
+	
+	public boolean request(String host) throws JSONException {
+		String content = null;
+		if (!ignoreException) {
+			try {
+				HttpEntity entity = null;
+				URI uri = null;
+				if (isGetRequest) {
+					StringBuilder sb = new StringBuilder(host + path + "?");
+					for (BasicNameValuePair p:params) {
+						sb.append(p.getName());
+						if (p.getValue() != null) {
+							sb.append("=");
+							sb.append(URLEncoder.encode(p.getValue(), HTTP.UTF_8));
+						}
+						sb.append("&");
+					}
+					uri = URI.create(sb.substring(0,  sb.length() - 1));
+				} else {
+					uri = URI.create(host + path);
+					if (requestJson != null) {
+						entity = new StringEntity(requestJson.toString(), HTTP.UTF_8);
+					} else {
+						entity = new UrlEncodedFormEntity(params, HTTP.UTF_8);
+					}
+					((HttpPost) httpRequest).setEntity(entity);
+				}
+				httpRequest.setURI(uri);
+				if (DBG) log(httpRequest.getURI().toString());
+				if (DBG) {
+					Log.i(TAG, "Request Header = {");
+					for(Header h : httpRequest.getAllHeaders()) {
+						Log.i(TAG, "    \"" + h.getName() + "\": \"" + h.getValue() + "\",");
+					}
+					Log.i(TAG, "}");
+				}
+				if (DBG) {
+					log("Request = " + (isGetRequest?"GET":"POST") + (requestJson == null?" {":""));
+					if (requestJson != null) {
+						log(requestJson.toString(4));
+					} else {
+						for (BasicNameValuePair p:params) {
+							log("    \"" + p.getName() + "\": \"" + p.getValue() + "\",");
+						}
+					}
+					if (requestJson == null) {
+						log("}");
+					}
+				}
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+			IOException exception = null;
+			HttpResponse httpResponse;
+			try {
+				httpResponse = httpManager.execute(httpRequest);
+				httpStatusCode = httpResponse.getStatusLine().getStatusCode();
+				HttpEntity entity = httpResponse.getEntity();
+				if (entity != null) {
+					if (httpStatusCode == HttpStatus.SC_OK) {
+						content = EntityUtils.toString(entity, HTTP.UTF_8);
+					} else {
+						errorMsg = getBadResponse(httpStatusCode);
+						entity.consumeContent();
+					}
+				}
+			} catch (ClientProtocolException e) {
+				exception = e;
+			} catch (IOException e) {
+				exception = e;
+			} catch (IllegalStateException e) {
+				exception = new IOException();
+				exception.initCause(e);
+				e.printStackTrace();
+			} finally {
+				if (!httpRequest.isAborted()) {
+					httpRequest.abort();
+				}
+			}
+			if (exception != null) {
+				errorMsg = processIOExceptionCallback(ignoreException, exception);
+				httpStatusCode = -1;
+			}
+		}
+		resp = null;
+		if (content != null) {
+			JSONObject json = new JSONObject(content);
+			resp = new Resp(json);
+			if (DBG) log("Response = " + json.toString(4));
+		}
+		if (DBG) log("request done");
+		return resp != null;
+	}
+
+	public Resp getResponse() {
+		return resp;
+	}
+	
+	public int getHttpStatusCode() {
+		return httpStatusCode;
+	}
+	
+	public void shutdown() {
+		if (httpRequest != null) {
+			ignoreException = true;
+			if (!httpRequest.isAborted()) {
+				if (DBG) log("abort http request");
+				try {
+					httpRequest.abort();
+				} catch(Exception e) {
+					e.printStackTrace();
+					// TODO ignore but some time this method may truely throw
+					// network on ui thread exception
+				}
+			}
+		}
+	}
+	
+	public String getErrorMessage() {
+		return errorMsg;
+	}
+	
+	public void setErrorMessage(String err) {
+		errorMsg = err;
+	}
+	
+	public final void setParam(String name, String value) {
+		params.add(new BasicNameValuePair(name, value));
+	}
+	
+	
+	public final void setJSONEntity(JSONObject json) {
+		if (isGetRequest) throw new IllegalArgumentException("Get request should not contain a json object entity");
+		httpRequest.addHeader("Content-Type", "application/json");
+		requestJson = json;
+		// ((HttpPost) httpRequest).setEntity(new StringEntity(requestJson.toString()));
+		
+	}
+	
+	protected void log(String s) {
+		android.util.Log.i(getClass().getSimpleName(), s);
+	}
+	
+	protected String getBadResponse(int status) {
+		return "服务器错误：" + status;
+	}
+	
+	/* need to be overridden, the same thread as request function*/
+	protected String processIOExceptionCallback(boolean ignore, IOException e) {
+		log(ignore + "=ignore, excepetion:");
+		e.printStackTrace();
+		//return ignore? null:e.getMessage();
+		if (ignore) return null;
+		
+		if (e instanceof SocketTimeoutException) {
+			return "连接超时，如果频繁出现，请检查网络";
+		} else if (e instanceof UnknownHostException) {
+			return "无法连接到服务器，请检查网络";
+		} else if (e instanceof java.net.ProtocolException) {
+			return "连接服务失败，请更新您的客户端";
+		} else if (e.getCause() instanceof IllegalStateException) {
+			return "连接池关闭错误";
+		} else if (e instanceof SSLPeerUnverifiedException) {
+			return "无法验证服务器证书，请联系客服";
+		} else if (e instanceof SSLHandshakeException) {
+			return "服务器证书验证失败，请联系客服";
+		} else {
+			return "您的网络不给力啊";
+		}
+	}
+	
+	public static interface ResponseListener {
+		public void onResp(int id, Resp resp);
+		public void onErr(int id, String err, int httpCode);
+	}
+	
+	public void asyncRequest(final ResponseListener rl, final int requestId) {
+		final Handler handler = new Handler();
+		new Thread() {
+			public void run() {
+				String error = null;
+				Resp resp = null;
+				try {
+		            if(request()) {
+		            	resp = getResponse();
+		            } else {
+		                error = getErrorMessage();
+		            }
+		        } catch (JSONException e) {
+		            error = "系统错误";
+		            e.printStackTrace();
+		        }
+				
+				if (resp != null) {
+					final Resp data = resp;
+					handler.post(new Runnable() {
+						public void run() {
+							rl.onResp(requestId, data);
+						}
+					});
+				} else if (error != null) {
+					final String data = error;
+					handler.post(new Runnable() {
+						public void run() {
+							rl.onErr(requestId, data, httpStatusCode);
+						}
+					});
+				}
+			}
+		}.start();
+	}
+
+}

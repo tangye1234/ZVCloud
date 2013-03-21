@@ -1,0 +1,45 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ListView
+        android:id="@+id/monitor_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    
+    <TextView
+        android:id="@+id/monitor_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/list_empty"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ff9000"
+        android:background="@drawable/white_bg_top"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/monitor_loading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#aa0090ff"
+        android:gravity="center"
+        android:padding="5dp"
+        android:text="@string/loading_list"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#ffffff" />
+
+    <TextView
+        android:id="@+id/monitor_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#aa0090ff"
+        android:gravity="center"
+        android:padding="5dp"
+        android:text="@string/loading_list"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ff9000" />
+
+</FrameLayout>

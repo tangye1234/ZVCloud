@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2011 Patrik Åkerfeldt
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+  
+          http://www.apache.org/licenses/LICENSE-2.0
+  
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources>
+
+    <declare-styleable name="ViewFlow">
+        <attr format="integer" name="sidebuffer" />
+        <attr format="boolean" name="autoflow" />
+    </declare-styleable>
+    <declare-styleable name="SimpleFlowIndicator">
+        <attr format="color" name="activeColor" />
+        <attr format="color" name="inactiveColor" />
+        <attr format="dimension" name="radius" />
+        <attr format="dimension" name="width" />
+        <attr format="dimension" name="height" />
+        <attr format="dimension" name="gap" />
+        <attr format="boolean" name="centered" />
+        <attr format="integer" name="fadeOut" />
+        <attr name="type">
+            <flag name="circle" value="0" />
+            <flag name="square" value="1" />
+        </attr>
+        <attr name="inactiveType">
+            <flag name="stroke" value="0" />
+            <flag name="fill" value="1" />
+        </attr>
+        <attr name="activeType">
+            <flag name="stroke" value="0" />
+            <flag name="fill" value="1" />
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="TitleFlowIndicator">
+        <attr format="dimension" name="titlePadding" />
+        <!-- Left/right padding of not active view titles. -->
+        <attr format="dimension" name="clipPadding" />
+        <attr format="color" name="selectedColor" />
+        <attr format="boolean" name="selectedBold" />
+        <attr format="dimension" name="selectedSize" />
+        <attr format="color" name="textColor" />
+        <attr format="dimension" name="textSize" />
+        <attr format="dimension" name="footerLineHeight" />
+        <attr format="color" name="footerColor" />
+        <attr format="dimension" name="footerTriangleHeight" />
+        <attr format="string" name="customTypeface" />
+    </declare-styleable>
+
+</resources>

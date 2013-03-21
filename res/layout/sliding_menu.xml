@@ -1,0 +1,79 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/menu_bg_full"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/menu_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/menu_title_bg"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="15dp" >
+
+            <TextView
+                android:id="@+id/menu_user"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:shadowColor="#cc000000"
+                android:shadowRadius="5"
+                android:text="@string/hello_world"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#3d3d3d" />
+
+            <TextView
+                android:id="@+id/menu_signoff"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:text="@string/signoff"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@drawable/link_btn_txt" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="14dp"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
+            android:paddingTop="2dp" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/menu_notice"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#8b8a8a" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/group_list"
+        android:textColor="#0093cb"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:padding="14dp" />
+    
+    <View
+        android:layout_height="1dp"
+        android:layout_width="match_parent"
+        android:background="#1db3eb" />
+
+    <ListView
+        android:id="@+id/green_house_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+</LinearLayout>

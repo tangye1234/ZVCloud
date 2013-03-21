@@ -1,0 +1,37 @@
+<com.zigvine.android.widget.CheckableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="25dp"
+        android:paddingTop="5dp"
+        android:paddingRight="25dp"
+        android:paddingBottom="5dp" >
+
+        <TextView
+            android:id="@+id/group_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/hello_world"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#3d3d3d" />
+
+        <TextView
+            android:id="@+id/group_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/menu_notice"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#8b8a8a" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="#55cccccc" />
+
+</com.zigvine.android.widget.CheckableLayout>
