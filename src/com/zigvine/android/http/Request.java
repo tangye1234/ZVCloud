@@ -34,14 +34,14 @@ import android.util.Log;
 
 public class Request {
 	
-	public static final boolean DBG = true; /* FIXME set to false to avoid info leaks */
+	public static final boolean DBG = false; /* FIXME set to false to avoid info leaks */
 	public static final String TAG = Request.class.getSimpleName();
 	public static final String URL;
 	static {
 		if (DBG) {
 			URL = "http://218.246.112.92/dservice";
 		} else {
-			URL = "http://qwerty";
+			URL = "http://218.246.112.92/dservice";
 		}
 	}
 	
@@ -49,6 +49,8 @@ public class Request {
 	public static final String Verify = "/verify";
 	public static final String GetGroupList = "/getgrouplist";
 	public static final String SnapShotData = "/snapshotdata";
+	public static final String GetAlarm = "/getalarm";
+	public static final String GetControl = "/controldata";
 	
 	private HttpManager httpManager;
 	private HttpRequestBase httpRequest;

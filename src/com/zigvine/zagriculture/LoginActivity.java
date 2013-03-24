@@ -17,11 +17,13 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 public class LoginActivity extends UIActivity<LoginActivity>
 		implements ResponseListener {
 
 	View logo, loginPan, loginBtn, loginInput, loginProgress;
+	ProgressBar progressBar;
 	EditText email, password;
 	QueuedTextView load;
 	Handler handler;
@@ -63,6 +65,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		loginInput = findViewById(R.id.login_input);
 		loginProgress = findViewById(R.id.login_progress);
 		load = (QueuedTextView) findViewById(R.id.loading_text);
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 		
 		Runnable showLogin = new Runnable() {
 			public void run() {
@@ -202,21 +205,23 @@ public class LoginActivity extends UIActivity<LoginActivity>
 			waitForFinish();
 		}
 	};
-	
+
 	private void waitForFinish() {
 		if (!load.isQueuedFinished()) {
-			handler.postDelayed(reFinish, 600);
+			handler.postDelayed(reFinish, 300);
+		} else if (loginProgress.getVisibility() == View.VISIBLE) {
+			AnimUtils.FadeOut.startAnimation(loginProgress, 300);
+			handler.postDelayed(reFinish, 300);
 		} else {
-			//TODO init ZV
-			/*try {
-				ZV.initGroup(resp.json.getJSONArray("GroupList"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}*/
-			MainApp.initSession(mUser, mGroup);
-			
+			progressBar.setVisibility(View.GONE);
+			load.setText("");
+			load.setVisibility(View.VISIBLE);
+			load.setTextColor(0xff008800);
+			load.setQueuedText("登录成功");
+			loginProgress.setVisibility(View.VISIBLE);
 			// start activity
-			Intent intent = new Intent(this, MainActivity.class);
+			MainApp.initSession(mUser, mGroup);
+			Intent intent = new Intent(UI.getActivity(), MainActivity.class);
 			startActivity(intent);
 			finish();
 		}

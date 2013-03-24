@@ -1,6 +1,12 @@
 package com.zigvine.zagriculture;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.zigvine.android.http.HttpManager;
 
@@ -59,11 +65,15 @@ public class MainApp extends Application {
 		mSignIn = true;
 		mUser = user;
 		mGroup = group;
+		mAlarmGroup = new HashMap<Long, Integer>();
 	}
 	
 	public static void quitSession() {
 		if (mSignIn) {
 			mSignIn = false;
+		}
+		if (mAlarmGroup != null) {
+			mAlarmGroup.clear();
 		}
 	}
 	
@@ -77,5 +87,57 @@ public class MainApp extends Application {
 	
 	public static JSONArray getGroup() {
 		return mGroup;
+	}
+	
+	/****************** alarm data ********************/
+	
+	private static Map<Long, Integer> mAlarmGroup;
+	private static int mAlarmCount;
+	private static ArrayList<AlarmReceiverListener> mListeners = new ArrayList<AlarmReceiverListener>();
+	
+	public static void setAlarmSummary(JSONArray list) throws JSONException {
+		if (mAlarmGroup != null) {
+			mAlarmGroup.clear();
+			mAlarmCount = list.length();
+			for (int i = 0; i < mAlarmCount; i++) {
+				JSONObject json = list.getJSONObject(i);
+				long gid = json.getLong("GroupId");
+				Integer count = mAlarmGroup.get(gid);
+				if (count == null) {
+					count = 0;
+				}
+				mAlarmGroup.put(gid, count.intValue() + 1);
+			}
+			synchronized(mListeners) {
+				for (AlarmReceiverListener l : mListeners) {
+					if (l != null) {
+						l.onAlarm(mAlarmCount, mAlarmGroup);
+					}
+				}
+			}
+		}
+	}
+	
+	public static Map<Long, Integer> getAlarmGroup() {
+		return mAlarmGroup;
+	}
+	
+	public static interface AlarmReceiverListener {
+		public void onAlarm(int alarmCount, Map<Long, Integer> alarmGroup);
+	}
+	
+	public static void registerAlarmReceiver(AlarmReceiverListener listener, boolean fetchOnRegister) {
+		if (listener != null) {
+			if (fetchOnRegister) {
+				listener.onAlarm(mAlarmCount, mAlarmGroup);
+			}
+			mListeners.add(listener);
+		}
+	}
+	
+	public static void unRegisterAlarmReceiver(AlarmReceiverListener listener) {
+		if (listener != null) {
+			mListeners.remove(listener);
+		}
 	}
 }

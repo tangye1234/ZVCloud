@@ -26,7 +26,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MonitorPager extends Pager
+public class ControlPager extends Pager
 		implements ResponseListener, IXListViewListener {
 
 	XListView list;
@@ -50,7 +50,7 @@ public class MonitorPager extends Pager
 	final static long Loading_Disappear_Delay_Ms = 500l;
 	final static long Refreshed_Disappear_Delay_Ms = 1000l;
 	
-	public MonitorPager(UIActivity<?> context) {
+	public ControlPager(UIActivity<?> context) {
 		super(context);
 		currentGroup = -1;
 	}
@@ -109,7 +109,7 @@ public class MonitorPager extends Pager
 				AnimUtils.DropIn.startAnimation(loader, 300);
 			}
 			ignoreLastRequest();
-			request = new Request(Request.SnapShotData, true);
+			request = new Request(Request.GetControl, true);
 			request.setParam("groupID", String.valueOf(groupid));
 			request.asyncRequest(this, requestId);
 		}
@@ -125,12 +125,17 @@ public class MonitorPager extends Pager
 	@Override
 	public void onResp(int id, Resp resp) {
 		if (id != requestId) return;
-		dropOutLoader();
-		cachedData.put(currentGroup, resp);
-		refresh.setText("已更新");
-		list.setRefreshTime(Utils.DATETIME.format(resp.time));
-		adapter.notifyDataSetChanged();
-		mContext.onRefresh(this);
+		if (resp.success) {
+			dropOutLoader();
+			cachedData.put(currentGroup, resp);
+			refresh.setText("已更新");
+			list.setRefreshTime(Utils.DATETIME.format(resp.time));
+			adapter.notifyDataSetChanged();
+			mContext.onRefresh(this);
+		} else {
+			dropOutLoader();
+			// fail
+		}
 	}
 
 	@Override
@@ -163,7 +168,7 @@ public class MonitorPager extends Pager
 				Resp resp = cachedData.get(currentGroup);
 				if (resp != null) {
 					try {
-						return resp.json.getJSONArray("DataList");
+						return resp.json.getJSONArray("data");
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
@@ -198,7 +203,7 @@ public class MonitorPager extends Pager
 		public long getItemId(int position) {
 			try {
 				JSONObject json = (JSONObject) getItem(position);
-				String mac = json.getString("DeviceId");
+				String mac = json.getString("deviceId");
 				return Utils.mac2long(mac);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -217,6 +222,7 @@ public class MonitorPager extends Pager
 			TextView time = (TextView) convertView.findViewById(R.id.monitor_time);
 			ImageView qid = (ImageView) convertView.findViewById(R.id.quotaId);
 			View alarm = convertView.findViewById(R.id.alarm_mark);
+			alarm.setVisibility(View.GONE);
 			if (position == 0) {
 				convertView.setBackgroundResource(R.drawable.white_bg_top);
 			} else {
@@ -225,26 +231,18 @@ public class MonitorPager extends Pager
 			try {
 				JSONObject json = (JSONObject) getItem(position);
 				if (json != null) {
-					String s = json.getString("DeviceName");
+					String s = json.getString("deviceTypeID");
 					dname.setText(s);
-					s = json.getString("QuotaName");
+					s = json.getString("deviceName");
 					qname.setText(s);
-					s = json.getString("Value");
+					JSONArray arr = json.getJSONArray("quota");
+					s = arr.getString(json.getInt("num"));
 					qvalue.setText(s);
-					s = json.getString("Timestamp");
+					s = json.getString("date");
 					time.setText(s);
-					int id = json.getInt("QuotaId");
+					int id = json.getInt("quotaID");
 					qid.setImageResource(Quota.ICONS[id]);
-					int status = json.getInt("AlarmStatus"); // 0:normal, 1:lower, 2:higher
-					if (status > 0) {
-						qvalue.setTextColor(0xffff0000);
-						qvalue.setShadowLayer(20, 0, 0, 0xffff0000);
-						alarm.setVisibility(View.VISIBLE);
-					} else {
-						qvalue.setTextColor(0xff7fe101);//0xfffdb222
-						qvalue.setShadowLayer(20, 0, 0, 0xff7fe101);
-						alarm.setVisibility(View.GONE);
-					}
+					
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();

@@ -26,7 +26,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MonitorPager extends Pager
+public class AlarmPager extends Pager
 		implements ResponseListener, IXListViewListener {
 
 	XListView list;
@@ -50,7 +50,7 @@ public class MonitorPager extends Pager
 	final static long Loading_Disappear_Delay_Ms = 500l;
 	final static long Refreshed_Disappear_Delay_Ms = 1000l;
 	
-	public MonitorPager(UIActivity<?> context) {
+	public AlarmPager(UIActivity<?> context) {
 		super(context);
 		currentGroup = -1;
 	}
@@ -109,7 +109,7 @@ public class MonitorPager extends Pager
 				AnimUtils.DropIn.startAnimation(loader, 300);
 			}
 			ignoreLastRequest();
-			request = new Request(Request.SnapShotData, true);
+			request = new Request(Request.GetAlarm, true);
 			request.setParam("groupID", String.valueOf(groupid));
 			request.asyncRequest(this, requestId);
 		}
@@ -163,7 +163,7 @@ public class MonitorPager extends Pager
 				Resp resp = cachedData.get(currentGroup);
 				if (resp != null) {
 					try {
-						return resp.json.getJSONArray("DataList");
+						return resp.json.getJSONArray("AlarmList");
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
@@ -227,11 +227,11 @@ public class MonitorPager extends Pager
 				if (json != null) {
 					String s = json.getString("DeviceName");
 					dname.setText(s);
-					s = json.getString("QuotaName");
+					s = json.getString("Quota");
 					qname.setText(s);
 					s = json.getString("Value");
 					qvalue.setText(s);
-					s = json.getString("Timestamp");
+					s = json.getString("Date");
 					time.setText(s);
 					int id = json.getInt("QuotaId");
 					qid.setImageResource(Quota.ICONS[id]);

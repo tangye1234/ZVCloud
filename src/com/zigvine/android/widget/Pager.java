@@ -22,6 +22,8 @@ public abstract class Pager {
 	}
 
 	public abstract void onCreate();
+	
+	public abstract void refreshCurrentGroupNow();
 
 	public View getContentView() {
 		return mView;

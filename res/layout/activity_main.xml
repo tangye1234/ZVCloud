@@ -32,18 +32,28 @@
             android:id="@+id/title_text"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/title_height"
-            android:gravity="center"
+            android:background="@drawable/title_btn"
             android:drawableLeft="@drawable/menu_icon"
+            android:gravity="center"
+            android:paddingRight="10dp"
             android:text="@string/hello_world"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#ff9000"
-            android:paddingRight="10dp"
-            android:background="@drawable/title_btn" />
-        
+            android:textColor="#ff9000" />
+
         <View
             android:layout_width="0dp"
             android:layout_height="@dimen/title_height"
             android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/refresh_menu"
+            android:layout_width="@dimen/title_height"
+            android:layout_height="@dimen/title_height"
+            android:background="@drawable/title_btn"
+            android:contentDescription="@string/more_refresh"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_menu_refresh"
+            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/more_menu"
@@ -52,8 +62,7 @@
             android:background="@drawable/title_btn"
             android:contentDescription="@string/more_menu"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_menu_overflow" />
-        
+            android:src="@drawable/ic_menu_moreoverflow" />
     </LinearLayout>
 
     <FrameLayout
@@ -74,46 +83,73 @@
             <TextView
                 android:id="@+id/monitor"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:padding="5dp"
                 android:drawableTop="@drawable/monitor_select"
                 android:gravity="center"
                 android:text="@string/monitor"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#ffffff" />
+                android:textColor="#ffffff"
+                android:background="@drawable/title_btn" />
 
             <TextView
                 android:id="@+id/control"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:padding="5dp"
                 android:drawableTop="@drawable/control"
                 android:gravity="center"
                 android:text="@string/control"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#99ffffff" />
+                android:textColor="#99ffffff"
+                android:background="@drawable/title_btn" />
 
             <TextView
                 android:id="@+id/graph"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:padding="5dp"
                 android:drawableTop="@drawable/graph"
                 android:gravity="center"
                 android:text="@string/graph"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#99ffffff" />
+                android:textColor="#99ffffff"
+                android:background="@drawable/title_btn" />
 
-            <TextView
-                android:id="@+id/alarm"
+            <FrameLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:drawableTop="@drawable/alarm"
-                android:gravity="center"
-                android:text="@string/alarm"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#99ffffff" />
+                android:layout_height="match_parent"
+                android:layout_weight="1" >
+
+                <TextView
+                    android:id="@+id/alarm"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:padding="5dp"
+                    android:drawableTop="@drawable/alarm"
+                    android:gravity="center"
+                    android:text="@string/alarm"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="#99ffffff"
+                    android:background="@drawable/title_btn" />
+
+                <TextView
+                    android:id="@+id/tab_alarm_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|center_horizontal"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginTop="-6dp"
+                    android:background="@drawable/notify_icon"
+                    android:gravity="center"
+                    android:textColor="#ffffff"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+            </FrameLayout>
         </LinearLayout>
 
         <org.taptwo.android.widget.SimpleFlowIndicator

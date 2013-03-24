@@ -1,5 +1,6 @@
 package com.zigvine.android.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
@@ -46,4 +47,6 @@ public class Utils {
 		}
 		return (time / 3600000*24l) + "天";
 	}
+	
+	public static final SimpleDateFormat DATETIME = new SimpleDateFormat("yyyy-MM-dd HH时mm分ss", Locale.US);
 }

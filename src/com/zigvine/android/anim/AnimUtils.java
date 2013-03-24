@@ -12,6 +12,44 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 
 public class AnimUtils {
+	
+	public static AnimationListener loadStartListener(final View v, final int visibility) {
+		return new AnimationListener() {
+
+			@Override
+			public void onAnimationEnd(Animation animation) {
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}
+
+			@Override
+			public void onAnimationStart(Animation animation) {
+				v.setVisibility(visibility);
+			}
+
+		};
+	}
+	
+	public static AnimationListener loadEndListener(final View v, final int visibility) {
+		return new AnimationListener() {
+
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				v.setVisibility(visibility);
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}
+
+			@Override
+			public void onAnimationStart(Animation animation) {
+			}
+
+		};
+	}
 
 	public static class FadeIn {
 
@@ -25,28 +63,10 @@ public class AnimUtils {
 			Animation anim = AnimationUtils
 					.loadAnimation(view.getContext(), android.R.anim.fade_in);
 			anim.setDuration(duration);
-			anim.setAnimationListener(loadListener(view));
+			anim.setAnimationListener(loadStartListener(view, View.VISIBLE));
 			view.startAnimation(anim);
 		}
-
-		public static AnimationListener loadListener(final View v) {
-			return new AnimationListener() {
-
-				@Override
-				public void onAnimationEnd(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationStart(Animation animation) {
-					v.setVisibility(View.VISIBLE);
-				}
-
-			};
-		}
+		
 	}
 
 	public static class FadeOut {
@@ -61,27 +81,8 @@ public class AnimUtils {
 			Animation anim = AnimationUtils.loadAnimation(view.getContext(),
 					android.R.anim.fade_out);
 			anim.setDuration(duration);
-			anim.setAnimationListener(loadListener(view));
+			anim.setAnimationListener(loadEndListener(view, View.INVISIBLE));
 			view.startAnimation(anim);
-		}
-
-		public static AnimationListener loadListener(final View v) {
-			return new AnimationListener() {
-
-				@Override
-				public void onAnimationEnd(Animation animation) {
-					v.setVisibility(View.INVISIBLE);
-				}
-
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationStart(Animation animation) {
-				}
-
-			};
 		}
 	}
 
@@ -96,27 +97,8 @@ public class AnimUtils {
 		public static void startAnimation(View view, long duration) {
 			Animation anim = new ScaleAnimation(1, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f,
 					Animation.RELATIVE_TO_SELF, 0.5f);
-			anim.setAnimationListener(loadListener(view));
+			anim.setAnimationListener(loadStartListener(view, View.VISIBLE));
 			view.startAnimation(anim);
-		}
-
-		public static AnimationListener loadListener(final View v) {
-			return new AnimationListener() {
-
-				@Override
-				public void onAnimationEnd(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationStart(Animation animation) {
-					v.setVisibility(View.VISIBLE);
-				}
-
-			};
 		}
 	}
 
@@ -131,27 +113,8 @@ public class AnimUtils {
 		public static void startAnimation(View view, long duration) {
 			Animation anim = new ScaleAnimation(1, 1, 1, 0, Animation.RELATIVE_TO_SELF, 0.5f,
 					Animation.RELATIVE_TO_SELF, 0.5f);
-			anim.setAnimationListener(loadListener(view));
+			anim.setAnimationListener(loadEndListener(view, View.INVISIBLE));
 			view.startAnimation(anim);
-		}
-
-		public static AnimationListener loadListener(final View v) {
-			return new AnimationListener() {
-
-				@Override
-				public void onAnimationEnd(Animation animation) {
-					v.setVisibility(View.INVISIBLE);
-				}
-
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationStart(Animation animation) {
-				}
-
-			};
 		}
 	}
 
@@ -166,27 +129,8 @@ public class AnimUtils {
 
 		public static void startAnimation(View view, long duration) {
 			Animation anim = loadAnimation(view.getContext(), duration);
-			anim.setAnimationListener(loadListener(view));
+			anim.setAnimationListener(loadStartListener(view, View.VISIBLE));
 			view.startAnimation(anim);
-		}
-
-		public static AnimationListener loadListener(final View v) {
-			return new AnimationListener() {
-
-				@Override
-				public void onAnimationEnd(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationStart(Animation animation) {
-					v.setVisibility(View.VISIBLE);
-				}
-
-			};
 		}
 	}
 
@@ -201,27 +145,8 @@ public class AnimUtils {
 
 		public static void startAnimation(View view, long duration) {
 			Animation anim = loadAnimation(view.getContext(), duration);
-			anim.setAnimationListener(loadListener(view));
+			anim.setAnimationListener(loadEndListener(view, View.GONE));
 			view.startAnimation(anim);
-		}
-
-		public static AnimationListener loadListener(final View v) {
-			return new AnimationListener() {
-
-				@Override
-				public void onAnimationEnd(Animation animation) {
-					v.setVisibility(View.GONE);
-				}
-
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationStart(Animation animation) {
-				}
-
-			};
 		}
 	}
 

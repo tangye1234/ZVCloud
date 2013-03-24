@@ -32,7 +32,7 @@ import android.util.Log;
 
 public class HttpManager {
 	
-	public static final boolean DBG = true;
+	public static final boolean DBG = false;
 	public static final String TAG = "HttpManager";
 	
 	/**

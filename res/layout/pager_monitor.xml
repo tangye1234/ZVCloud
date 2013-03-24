@@ -2,7 +2,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <ListView
+    <me.maxwin.view.XListView
         android:id="@+id/monitor_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
@@ -16,7 +16,8 @@
         android:text="@string/list_empty"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#ff9000"
-        android:background="@drawable/white_bg_top"
+        android:background="@drawable/dialog_full_holo_light"
+        android:padding="20dp"
         android:visibility="gone" />
 
     <TextView
@@ -40,6 +41,6 @@
         android:padding="5dp"
         android:text="@string/loading_list"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#ff9000" />
+        android:textColor="#ffffff" />
 
 </FrameLayout>

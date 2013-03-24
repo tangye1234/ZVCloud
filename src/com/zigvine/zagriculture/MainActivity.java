@@ -1,15 +1,19 @@
 package com.zigvine.zagriculture;
 
+import java.util.Map;
+
 import org.json.JSONObject;
 import org.taptwo.android.widget.SimpleFlowIndicator;
 import org.taptwo.android.widget.ViewFlow;
 import org.taptwo.android.widget.ViewFlow.SwitchDecideListener;
 
-import com.zigvine.android.http.Request.Resp;
-import com.zigvine.android.http.Request.ResponseListener;
+import com.zigvine.android.widget.AlarmPager;
+import com.zigvine.android.widget.ControlPager;
 import com.zigvine.android.widget.MonitorPager;
 import com.zigvine.android.widget.Pager;
+import com.zigvine.zagriculture.MainApp.AlarmReceiverListener;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
@@ -18,20 +22,24 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 public class MainActivity extends UIActivity<MainActivity>
-		implements ResponseListener, SwitchDecideListener {
+		implements SwitchDecideListener, AlarmReceiverListener {
 	
 	ViewFlow mViewFlow;
 	ViewFlowAdapter adapter;
 	SimpleFlowIndicator indicator;
-	TextView monitor, control, graph, alarm, title;
+	TextView monitor, control, graph, alarm, title, alarm_count;
 	TextView[] views;
-	View moreMenu;
+	View moreMenu, refreshMenu;
 	int[] tabsDrawableUnselectedRes;
 	int[] tabsDrawableSelectedRes;
 	int currentPos;
 	
 	Pager[] pages = new Pager[4];
 	MonitorPager mMonitorPager;
+	ControlPager mControlPager;
+	AlarmPager mAlarmPager;
+	
+	public static final String POSITION_EXTRA = "com.zigvine.zagriculture.jump_position";
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -39,8 +47,11 @@ public class MainActivity extends UIActivity<MainActivity>
 		setContentView(R.layout.activity_main);
 		
 		mMonitorPager = new MonitorPager(this);
+		mControlPager = new ControlPager(this);
+		mAlarmPager = new AlarmPager(this);
 		pages[0] = mMonitorPager;
-		//pages[1] = mMonitorPager;
+		pages[1] = mControlPager;
+		pages[3] = mAlarmPager;
 		
 		UI.createStandardSlidingMenu();
 		
@@ -48,14 +59,22 @@ public class MainActivity extends UIActivity<MainActivity>
 		title.setText(getTitle());
 		title.setOnClickListener(this);
 		
+		refreshMenu = findViewById(R.id.refresh_menu);
+		refreshMenu.setVisibility(View.VISIBLE);
+		refreshMenu.setOnClickListener(this);
+		
 		moreMenu = findViewById(R.id.more_menu);
 		moreMenu.setOnClickListener(this);
+		
+		//get position from intent
+		Intent intent = getIntent();
+		int pos = intent.getIntExtra(POSITION_EXTRA, 0);
+		//currentPos = 0;
 		
 		// content viewflow
         mViewFlow = (ViewFlow) findViewById(R.id.pages);
 		adapter = new ViewFlowAdapter(this);
-		mViewFlow.setAdapter(adapter, 0);
-		currentPos = 0;
+		
 		indicator = (SimpleFlowIndicator) findViewById(R.id.indic);
 		mViewFlow.setFlowIndicator(indicator);
 		//mViewFlow.setOnViewSwitchListener(this);
@@ -67,6 +86,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		control = (TextView) findViewById(R.id.control);
 		graph = (TextView) findViewById(R.id.graph);
 		alarm = (TextView) findViewById(R.id.alarm);
+		alarm_count = (TextView) findViewById(R.id.tab_alarm_count);
 		views = new TextView[] {monitor, control, graph, alarm};
 		tabsDrawableUnselectedRes = new int[] {
 				R.drawable.monitor,
@@ -88,6 +108,36 @@ public class MainActivity extends UIActivity<MainActivity>
 		Drawable selectDrawable = getResources().getDrawable(tabsDrawableSelectedRes[currentPos]);
 		views[currentPos].setCompoundDrawablesWithIntrinsicBounds(null, selectDrawable, null, null);
 		*/
+		mViewFlow.setAdapter(adapter, pos); // must init after all
+	}
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		int pos = intent.getIntExtra(POSITION_EXTRA, 0);
+		mViewFlow.setSelection(pos);
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		startOnlineService(false);
+		MainApp.registerAlarmReceiver(this, true);
+		log("quit background, register alarm receiver");
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		startOnlineService(true);
+		MainApp.unRegisterAlarmReceiver(this);
+		log("start background on depend, un-register alarm receiver");
+	}
+	
+	
+	private void startOnlineService(boolean foreground) {
+		Intent intent = new Intent(this, OnlineService.class);
+		intent.putExtra(OnlineService.FOREGROUND_EXTRA, foreground);
+		startService(intent);
 	}
 
 	@Override
@@ -107,6 +157,11 @@ public class MainActivity extends UIActivity<MainActivity>
 		case R.id.title_text:
 			UI.toggleStandardMenu();
 			break;
+		case R.id.refresh_menu:
+			if (pages[currentPos] != null) {
+				pages[currentPos].refreshCurrentGroupNow();
+			}
+			break;
 		case R.id.more_menu:
 			//TODO
 			break;
@@ -124,6 +179,8 @@ public class MainActivity extends UIActivity<MainActivity>
 				title.setText(name);
 				//MainApp.selectStore(id, name, desc);
 				mMonitorPager.refreshData(id);
+				mControlPager.refreshData(id);
+				mAlarmPager.refreshData(id);
 				//adapter.notifyDataSetChanged();
 			}
 		} catch (Exception e) {
@@ -132,28 +189,29 @@ public class MainActivity extends UIActivity<MainActivity>
 	}
 	
 	@Override
-	public void onResp(int id, Resp resp) {
-		log(resp.json.toString());
-		switch (id) {
-		
-		}
-			
-	}
-
-	@Override
-	public void onErr(int id, String err, int httpCode) {
-		log(err);
-		switch (id) {
-		
+	public void onAlarm(int alarmCount, Map<Long, Integer> alarmGroup) {
+		//log("alarm count=" + alarmCount);
+		UI.updateStandardSlidingMenu();
+		if (alarmCount > 0) {
+			if (alarmCount > 99) {
+				alarm_count.setText("99+");
+			} else {
+				alarm_count.setText("" + alarmCount);
+			}
+			alarm_count.setVisibility(View.VISIBLE);
+		} else {
+			alarm_count.setText("0");
+			alarm_count.setVisibility(View.GONE);
 		}
 	}
 	
 	@Override
 	public void onRefresh(Pager pager) {
-		if (pager == mMonitorPager) {
+		/*if (pager == mMonitorPager) {
 			log("Refresh pager of " + pager.toString());
 			//adapter.notifyDataSetChanged();
-		}
+		}*/
+		// TODO
 	}
 	
 	@Override
@@ -206,9 +264,13 @@ public class MainActivity extends UIActivity<MainActivity>
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			if (convertView == null) {
-				if (position == 0) {
+				switch(position) {
+				case 0:
+				case 1:
+				case 3:
 					convertView = activity.pages[position].getContentView();
-				} else {
+					break;
+				default:
 					convertView = new android.widget.TextView(activity);
 				}
 			}

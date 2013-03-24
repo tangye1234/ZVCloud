@@ -1,5 +1,7 @@
 package com.zigvine.zagriculture;
 
+import java.util.Map;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -112,6 +114,16 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		}
 		
 		/**
+		 * update the standard menu
+		 */
+		public void updateStandardSlidingMenu() {
+			MenuListAdapter adapter = (MenuListAdapter) list.getAdapter();
+			if (adapter != null) {
+				adapter.notifyDataSetChanged();
+			}
+		}
+		
+		/**
 		 * Toggle the standard sliding menu open or close
 		 */
 		public void toggleStandardMenu() {
@@ -193,19 +205,41 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 				convertView = View.inflate(activity, R.layout.menu_list_item, null);
 			}
 			final JSONObject obj = (JSONObject) getItem(position);
+			Map<Long, Integer> alarmGroup = MainApp.getAlarmGroup();
 			String name = "";
 			String desc = "";
+			Long id = null;
+			Integer count = null;
 			try {
 				name = obj.getString("GroupName");
 				desc = obj.getString("GroupDesc");
+				id = obj.getLong("GroupId");
+				if (alarmGroup != null) {
+					count = alarmGroup.get(id);
+					if (count == null) {
+			        	count = 0;
+			        }
+				}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			
 	        TextView txtName = (TextView) convertView.findViewById(R.id.group_name);
 	        TextView txtDesc = (TextView) convertView.findViewById(R.id.group_desc);
+	        TextView txtCout = (TextView) convertView.findViewById(R.id.group_alarm_count);
 	        txtName.setText(name);
 	        txtDesc.setText(desc);
+	        if (count > 0) {
+	        	if (count > 99) {
+	        		txtCout.setText("99+");
+	        	} else {
+	        		txtCout.setText("" + count);
+	        	}
+	        	txtCout.setVisibility(View.VISIBLE);
+	        } else {
+	        	txtCout.setText("0");
+	        	txtCout.setVisibility(View.GONE);
+	        }
 	        return convertView;
 		}
 

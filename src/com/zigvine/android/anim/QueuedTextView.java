@@ -43,6 +43,14 @@ public class QueuedTextView extends TextView {
 	
 	private void fadeOut() {
 		finished = false;
+		if (getText().length() == 0) {
+			CharSequence text = queue.poll();
+			if (text != null) {
+				setText(text);
+				fadeIn();
+			}
+			return;
+		}
 		Animation anim = AnimUtils.FadeOut.loadAnimation(mContext, 300);
 		anim.setAnimationListener(new AnimationListener() {
 			@Override
@@ -66,12 +74,19 @@ public class QueuedTextView extends TextView {
 	}
 	
 	private void fadeIn() {
+		if (getText().length() == 0) {
+			if (queue.size() > 0) {
+				fadeOut();
+			} else {
+				finished = true;
+			}
+			return;
+		}
 		Animation anim = AnimUtils.FadeIn.loadAnimation(mContext, 300);
 		anim.setAnimationListener(new AnimationListener() {
 			@Override
 			public void onAnimationEnd(Animation animation) {
-				CharSequence text = queue.poll();
-				if (text != null) {
+				if (queue.size() > 0) {
 					fadeOut();
 				} else {
 					finished = true;

@@ -17,9 +17,11 @@
     <string name="graph">图表</string>
     <string name="alarm">报警</string>
     <string name="more_menu">更多菜单</string>
+    <string name="more_refresh">刷新</string>
     <string name="action_settings">设置</string>
     <string name="quota">指标</string>
     <string name="loading_list">正在载入数据&#8230;</string>
+    <string name="loaded_list">载入成功</string>
     <string name="list_empty">列表为空</string>
     <string name="hello_world">Hello world!</string>
     
@@ -27,6 +29,13 @@
     <string name="e2">请输入密码</string>
     <string name="e3">无此邮箱账户</string>
     <string name="e4">载入失败，请重新登录</string>
+    
+    <string name="xlistview_header_hint_normal">下拉刷新</string>
+    <string name="xlistview_header_hint_ready">松开刷新数据</string>
+    <string name="xlistview_header_hint_loading">正在加载&#8230;</string>
+    <string name="xlistview_header_last_time">上次更新时间：</string>
+    <string name="xlistview_footer_hint_normal">查看更多</string>
+    <string name="xlistview_footer_hint_ready">松开载入更多</string>
     
 
 </resources>

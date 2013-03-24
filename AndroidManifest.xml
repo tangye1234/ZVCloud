@@ -32,6 +32,8 @@
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />
+        
+        <service android:name=".OnlineService" />
     </application>
 
 </manifest>
