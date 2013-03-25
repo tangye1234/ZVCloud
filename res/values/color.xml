@@ -3,7 +3,7 @@
     <drawable name="link_btn_txt_normal">#1db3eb</drawable>
     <drawable name="link_btn_txt_pressed">#0093cb</drawable>
     
-    <color name="transparent">#00000000</color>
+    <color name="transparent">#00ffffff</color>
     <color name="opaque_white">#99ffffff</color>
     <color name="pass_background">#55000000</color>
 </resources>

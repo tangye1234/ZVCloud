@@ -98,6 +98,8 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 				user.setText(MainApp.getUser());
 				signoff.setOnClickListener(activity);
 				final MenuListAdapter adapter = new MenuListAdapter(activity, MainApp.getGroup());
+				list.setDivider(null);
+				list.setDividerHeight(0);
 				list.setAdapter(adapter);
 				list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 				list.setOnItemClickListener(adapter);
