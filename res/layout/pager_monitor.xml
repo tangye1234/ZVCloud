@@ -5,7 +5,8 @@
     <me.maxwin.view.XListView
         android:id="@+id/monitor_list_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layoutAnimation="@anim/list_anim_layout" />
     
     <TextView
         android:id="@+id/monitor_empty"
