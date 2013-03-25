@@ -27,18 +27,33 @@
         android:layout_gravity="top"
         android:background="@drawable/titlebar"
         android:orientation="horizontal" >
-
-        <TextView
-            android:id="@+id/title_text"
+        
+        <LinearLayout 
+            android:id="@+id/title_main"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/title_height"
             android:background="@drawable/title_btn"
-            android:drawableLeft="@drawable/menu_icon"
-            android:gravity="center"
-            android:paddingRight="10dp"
-            android:text="@string/hello_world"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#ff9000" />
+            android:orientation="horizontal">
+        
+	        <ImageView
+	            android:id="@+id/title_menu"
+	            android:layout_width="@dimen/title_height"
+	            android:layout_height="@dimen/title_height"
+	            android:contentDescription="@string/title_menu"
+	            android:scaleType="centerInside"
+	            android:src="@drawable/ic_menu_title" />
+	
+	        <TextView
+	            android:id="@+id/title_text"
+	            android:layout_width="wrap_content"
+	            android:layout_height="@dimen/title_height"
+	            android:gravity="center"
+	            android:paddingRight="10dp"
+	            android:text="@string/hello_world"
+	            android:textAppearance="?android:attr/textAppearanceLarge"
+	            android:textColor="#ccffffff" />
+        
+        </LinearLayout>
 
         <View
             android:layout_width="0dp"

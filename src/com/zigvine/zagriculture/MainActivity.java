@@ -29,7 +29,7 @@ public class MainActivity extends UIActivity<MainActivity>
 	SimpleFlowIndicator indicator;
 	TextView monitor, control, graph, alarm, title, alarm_count;
 	TextView[] views;
-	View moreMenu, refreshMenu;
+	View moreMenu, refreshMenu, titleMain;
 	int[] tabsDrawableUnselectedRes;
 	int[] tabsDrawableSelectedRes;
 	int currentPos;
@@ -57,7 +57,9 @@ public class MainActivity extends UIActivity<MainActivity>
 		
 		title = (TextView) findViewById(R.id.title_text);
 		title.setText(getTitle());
-		title.setOnClickListener(this);
+		
+		titleMain = findViewById(R.id.title_main);
+		titleMain.setOnClickListener(this);
 		
 		refreshMenu = findViewById(R.id.refresh_menu);
 		refreshMenu.setVisibility(View.VISIBLE);
@@ -154,7 +156,7 @@ public class MainActivity extends UIActivity<MainActivity>
 			log("pos" + view.getTag().toString());
 			mViewFlow.setSelection((Integer) view.getTag());
 			break;
-		case R.id.title_text:
+		case R.id.title_main:
 			UI.toggleStandardMenu();
 			break;
 		case R.id.refresh_menu:

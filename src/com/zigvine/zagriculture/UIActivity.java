@@ -101,6 +101,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 				list.setDivider(null);
 				list.setDividerHeight(0);
 				list.setAdapter(adapter);
+				list.setScrollbarFadingEnabled(false);
 				list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 				list.setOnItemClickListener(adapter);
 				list.post(new Runnable() {
