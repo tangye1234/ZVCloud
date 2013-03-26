@@ -308,11 +308,11 @@ public class ViewFlow extends AdapterView<Adapter> {
 
 				if (velocityX > SNAP_VELOCITY && mCurrentScreen > 0) {
 					// Fling hard enough to move left
-					snapToScreen(mCurrentScreen - 1);
+					snapToScreen(mCurrentScreen - 1, velocityX);
 				} else if (velocityX < -SNAP_VELOCITY
 						&& mCurrentScreen < getChildCount() - 1) {
 					// Fling hard enough to move right
-					snapToScreen(mCurrentScreen + 1);
+					snapToScreen(mCurrentScreen + 1, velocityX);
 				} else {
 					snapToDestination();
 				}
@@ -418,11 +418,11 @@ public class ViewFlow extends AdapterView<Adapter> {
 
 				if (velocityX > SNAP_VELOCITY && mCurrentScreen > 0) {
 					// Fling hard enough to move left
-					snapToScreen(mCurrentScreen - 1);
+					snapToScreen(mCurrentScreen - 1, velocityX);
 				} else if (velocityX < -SNAP_VELOCITY
 						&& mCurrentScreen < getChildCount() - 1) {
 					// Fling hard enough to move right
-					snapToScreen(mCurrentScreen + 1);
+					snapToScreen(mCurrentScreen + 1, velocityX);
 				} else {
 					snapToDestination();
 				}
@@ -463,10 +463,10 @@ public class ViewFlow extends AdapterView<Adapter> {
 		final int whichScreen = (getScrollX() + (screenWidth / 2))
 				/ screenWidth;
 
-		snapToScreen(whichScreen);
+		snapToScreen(whichScreen, 0);
 	}
 
-	private void snapToScreen(int whichScreen) {
+	private void snapToScreen(int whichScreen, int velocity) {
 		mLastScrollDirection = whichScreen - mCurrentScreen;
 		if (!mScroller.isFinished())
 			return;
@@ -481,7 +481,11 @@ public class ViewFlow extends AdapterView<Adapter> {
 
 		final int newX = whichScreen * getWidth();
 		final int delta = newX - getScrollX();
-		mScroller.startScroll(getScrollX(), 0, delta, 0, Math.abs(delta));
+		if (velocity == 0) {
+			mScroller.startScroll(getScrollX(), 0, delta, 0, Math.abs(delta));
+		} else {
+			mScroller.startScroll(getScrollX(), 0, delta, 0, Math.abs(2000*delta/velocity));
+		}
 		invalidate();
 	}
 	
@@ -497,7 +501,7 @@ public class ViewFlow extends AdapterView<Adapter> {
 			if (mCurrentAdapterIndex == getViewsCount() - 1) {
 				setSelection(0);
 			} else {
-				snapToScreen((mCurrentScreen + 1));
+				snapToScreen((mCurrentScreen + 1), 0);
 			}
 		}
 	}
