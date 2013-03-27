@@ -30,16 +30,33 @@ public class MainActivity extends UIActivity<MainActivity>
 	TextView monitor, control, graph, alarm, title, alarm_count;
 	TextView[] views;
 	View moreMenu, refreshMenu, titleMain;
-	int[] tabsDrawableUnselectedRes;
-	int[] tabsDrawableSelectedRes;
 	int currentPos;
+	long currentGroup;
 	
 	Pager[] pages = new Pager[4];
 	MonitorPager mMonitorPager;
 	ControlPager mControlPager;
 	AlarmPager mAlarmPager;
+	boolean refreshOnStart;
 	
 	public static final String POSITION_EXTRA = "com.zigvine.zagriculture.jump_position";
+	
+	final static int[] tabsDrawableUnselectedRes;
+	final static int[] tabsDrawableSelectedRes;
+	static {
+		tabsDrawableUnselectedRes = new int[] {
+				R.drawable.monitor,
+				R.drawable.control,
+				R.drawable.graph,
+				R.drawable.alarm
+			};
+		tabsDrawableSelectedRes = new int[] {
+				R.drawable.monitor_select,
+				R.drawable.control_select,
+				R.drawable.graph_select,
+				R.drawable.alarm_select
+			};
+	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -68,10 +85,8 @@ public class MainActivity extends UIActivity<MainActivity>
 		moreMenu = findViewById(R.id.more_menu);
 		moreMenu.setOnClickListener(this);
 		
-		//get position from intent
-		Intent intent = getIntent();
-		int pos = intent.getIntExtra(POSITION_EXTRA, 0);
 		//currentPos = 0;
+		currentGroup = -1;
 		
 		// content viewflow
         mViewFlow = (ViewFlow) findViewById(R.id.pages);
@@ -90,33 +105,29 @@ public class MainActivity extends UIActivity<MainActivity>
 		alarm = (TextView) findViewById(R.id.alarm);
 		alarm_count = (TextView) findViewById(R.id.tab_alarm_count);
 		views = new TextView[] {monitor, control, graph, alarm};
-		tabsDrawableUnselectedRes = new int[] {
-				R.drawable.monitor,
-				R.drawable.control,
-				R.drawable.graph,
-				R.drawable.alarm
-			};
-		tabsDrawableSelectedRes = new int[] {
-				R.drawable.monitor_select,
-				R.drawable.control_select,
-				R.drawable.graph_select,
-				R.drawable.alarm_select
-			};
+		
 		for (int i = 0; i < views.length; i++) {
 			views[i].setTag(i);
 			views[i].setOnClickListener(this);
 		}
-		/*
-		Drawable selectDrawable = getResources().getDrawable(tabsDrawableSelectedRes[currentPos]);
-		views[currentPos].setCompoundDrawablesWithIntrinsicBounds(null, selectDrawable, null, null);
-		*/
+		
+		//get position from intent
+		Intent intent = getIntent();
+		int pos = intent.getIntExtra(POSITION_EXTRA, 0);
 		mViewFlow.setAdapter(adapter, pos); // must init after all
+		refreshOnStart = true;
 	}
 	
 	@Override
 	protected void onNewIntent(Intent intent) {
 		int pos = intent.getIntExtra(POSITION_EXTRA, 0);
 		mViewFlow.setSelection(pos);
+		if (pages[currentPos] != null) {
+			pages[currentPos].refreshCurrentGroupNow();
+		}
+		refreshOnStart = true;
+		// FIXME if use just enter it without new intent, than no tabs will be refreshed
+		log("new Intent arrives");
 	}
 	
 	@Override
@@ -124,6 +135,13 @@ public class MainActivity extends UIActivity<MainActivity>
 		super.onStart();
 		startOnlineService(false);
 		MainApp.registerAlarmReceiver(this, true);
+		if (!refreshOnStart) {
+			if (pages[currentPos] != null) {
+				pages[currentPos].notifyLastRefreshTime();
+			}
+		} else {
+			refreshOnStart = false;
+		}
 		log("quit background, register alarm receiver");
 	}
 	
@@ -153,7 +171,6 @@ public class MainActivity extends UIActivity<MainActivity>
 		case R.id.control:
 		case R.id.graph:
 		case R.id.alarm:
-			log("pos" + view.getTag().toString());
 			mViewFlow.setSelection((Integer) view.getTag());
 			break;
 		case R.id.title_main:
@@ -179,10 +196,19 @@ public class MainActivity extends UIActivity<MainActivity>
 				String name = json.getString("GroupName");
 				//String desc = json.getString("GroupDesc");
 				title.setText(name);
+				// TODO too much data connection here
 				//MainApp.selectStore(id, name, desc);
-				mMonitorPager.refreshData(id);
-				mControlPager.refreshData(id);
-				mAlarmPager.refreshData(id);
+				currentGroup = id;
+				for (int i = 0; i < pages.length; i++) {
+					Pager page = pages[i];
+					if (page != null) {
+						if (i == currentPos) {
+							page.refreshData(currentGroup);
+						} else {
+							page.refreshDataWithoutFetch(currentGroup);
+						}
+					}
+				}
 				//adapter.notifyDataSetChanged();
 			}
 		} catch (Exception e) {
@@ -235,6 +261,9 @@ public class MainActivity extends UIActivity<MainActivity>
 		selectTabs.setTextColor(0xffffffff);
 		unSelectTabs.setTextColor(0x99ffffff);
 		currentPos = position;
+		if (currentGroup >= 0 && pages[currentPos] != null) {
+			pages[currentPos].refreshData(currentGroup);
+		}
 	}
 	
 	public static class ViewFlowAdapter extends BaseAdapter {
@@ -274,6 +303,7 @@ public class MainActivity extends UIActivity<MainActivity>
 					break;
 				default:
 					convertView = new android.widget.TextView(activity);
+					((TextView) convertView).setText("datagram");
 				}
 			}
 			return convertView;

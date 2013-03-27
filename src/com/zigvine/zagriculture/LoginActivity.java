@@ -81,6 +81,8 @@ public class LoginActivity extends UIActivity<LoginActivity>
 						lp.setMargins(lp.leftMargin, lp.topMargin, lp.rightMargin, value);
 						loginBtn.requestLayout();
 					}
+					@Override
+					public void onAnimationEnd() {}
 				};
 				new AnimUtils.CustomAnimation(500, lp.bottomMargin, -Utils.dp2px(UI.getActivity(), 30), Call_back).startAnimation();
 				
@@ -145,7 +147,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	}
 	
 	@Override
-	public void onResp(int id, Resp resp) {
+	public void onResp(int id, Resp resp, Object...obj) {
 		if (resp != null) log(resp.json.toString());
 		boolean recovery = true;
 		switch (id) {
@@ -187,7 +189,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	}
 
 	@Override
-	public void onErr(int id, String err, int httpCode) {
+	public void onErr(int id, String err, int httpCode, Object...obj) {
 		log(err);
 		switch (id) {
 		case VERIFY_ID:

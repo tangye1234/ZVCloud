@@ -20,7 +20,7 @@ import android.support.v4.app.NotificationCompat;
 
 public class OnlineService extends Service implements Runnable, ResponseListener {
 	
-	public static final String FOREGROUND_EXTRA = "foreground";
+	public static final String FOREGROUND_EXTRA = "com.zigvine.zagriculture.service_foreground";
 	public static final long GET_ALARM_PERIOD = 5 * 1 * 1000;  // 5 mins
 	
 	int requestId;
@@ -94,7 +94,7 @@ public class OnlineService extends Service implements Runnable, ResponseListener
     }
 
 	@Override
-	public void onResp(int id, Resp resp) {
+	public void onResp(int id, Resp resp, Object...obj) {
 		if (resp != null) {
 			try {
 				JSONArray list = resp.json.getJSONArray("AlarmList");
@@ -110,7 +110,7 @@ public class OnlineService extends Service implements Runnable, ResponseListener
 	}
 
 	@Override
-	public void onErr(int id, String err, int httpCode) {
+	public void onErr(int id, String err, int httpCode, Object...obj) {
 		if (id != requestId) return;
 		// TODO something that user want to be notified
 	}

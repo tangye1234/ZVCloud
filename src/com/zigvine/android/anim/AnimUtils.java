@@ -13,11 +13,16 @@ import android.view.animation.TranslateAnimation;
 
 public class AnimUtils {
 	
-	public static AnimationListener loadStartListener(final View v, final int visibility) {
+	public static AnimationListener loadStartListener(final View v, final int visibility, final Runnable...r) {
 		return new AnimationListener() {
 
 			@Override
 			public void onAnimationEnd(Animation animation) {
+				for (Runnable run : r) {
+					if (run != null) {
+						run.run();
+					}
+				}
 			}
 
 			@Override
@@ -32,12 +37,17 @@ public class AnimUtils {
 		};
 	}
 	
-	public static AnimationListener loadEndListener(final View v, final int visibility) {
+	public static AnimationListener loadEndListener(final View v, final int visibility, final Runnable...r) {
 		return new AnimationListener() {
 
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				v.setVisibility(visibility);
+				for (Runnable run : r) {
+					if (run != null) {
+						run.run();
+					}
+				}
 			}
 
 			@Override
@@ -169,6 +179,7 @@ public class AnimUtils {
 
 		public static interface Callback {
 			public void process(int value);
+			public void onAnimationEnd();
 		}
 
 		public CustomAnimation(long Duration, int Start, int End, Callback Call_back) {
@@ -217,7 +228,13 @@ public class AnimUtils {
 				lastStep = step;
 			} else if (post) {
 				handler.postDelayed(this, 5);
+			} else {
+				callback.onAnimationEnd();
 			}
+		}
+		
+		public void cancel() {
+			handler.removeCallbacks(this);
 		}
 	}
 

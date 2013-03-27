@@ -34,14 +34,14 @@ import android.util.Log;
 
 public class Request {
 	
-	public static final boolean DBG = false; /* FIXME set to false to avoid info leaks */
+	public static final boolean GLOBAL_DBG = false; /* FIXME set to false to avoid info leaks */
 	public static final String TAG = Request.class.getSimpleName();
 	public static final String URL;
 	static {
-		if (DBG) {
+		if (GLOBAL_DBG) {
 			URL = "http://218.246.112.92/dservice";
 		} else {
-			URL = "http://218.246.112.92/dservice";
+			URL = "http://www.zigvine.com/dservice";
 		}
 	}
 	
@@ -51,6 +51,7 @@ public class Request {
 	public static final String SnapShotData = "/snapshotdata";
 	public static final String GetAlarm = "/getalarm";
 	public static final String GetControl = "/controldata";
+	public static final String SendCommand = "/sendcommand";
 	
 	private HttpManager httpManager;
 	private HttpRequestBase httpRequest;
@@ -62,12 +63,14 @@ public class Request {
 	private int httpStatusCode;
 	private volatile boolean ignoreException;
 	private boolean isGetRequest;
+	private boolean DBG;
 	
 	public static class Resp /**FIXME serialized ?**/ {
 		public JSONObject json;
 		public Date time;
 		public boolean success;
 		public int statusCode;
+		public Object obj;
 		public Resp(JSONObject jSon) {
 			json = jSon;
 			time = new Date();
@@ -84,6 +87,7 @@ public class Request {
 	}
 	
 	public Request(String uri_path, boolean isGet) {
+		DBG = GLOBAL_DBG;
 		httpManager = HttpManager.getMessageManager();
 		isGetRequest = isGet;
 		if (isGetRequest) {
@@ -94,6 +98,10 @@ public class Request {
 		path = uri_path;
 		ignoreException = false;
 		params = new ArrayList<BasicNameValuePair>();
+	}
+	
+	public void setDebug(boolean isDebug) {
+		DBG = isDebug;
 	}
 	
 	public boolean request() throws JSONException {
@@ -271,11 +279,11 @@ public class Request {
 	}
 	
 	public static interface ResponseListener {
-		public void onResp(int id, Resp resp);
-		public void onErr(int id, String err, int httpCode);
+		public void onResp(int id, Resp resp, Object...obj);
+		public void onErr(int id, String err, int httpCode, Object...obj);
 	}
 	
-	public void asyncRequest(final ResponseListener rl, final int requestId) {
+	public void asyncRequest(final ResponseListener rl, final int requestId, final Object...obj) {
 		final Handler handler = new Handler();
 		new Thread() {
 			public void run() {
@@ -296,14 +304,14 @@ public class Request {
 					final Resp data = resp;
 					handler.post(new Runnable() {
 						public void run() {
-							rl.onResp(requestId, data);
+							rl.onResp(requestId, data, obj);
 						}
 					});
 				} else if (error != null) {
 					final String data = error;
 					handler.post(new Runnable() {
 						public void run() {
-							rl.onErr(requestId, data, httpStatusCode);
+							rl.onErr(requestId, data, httpStatusCode, obj);
 						}
 					});
 				}

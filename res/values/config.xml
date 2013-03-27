@@ -1,11 +1,7 @@
 <resources>
 
-    <integer name="connection_manager_timeout">2000</integer>
+    <integer name="connection_manager_timeout">5000</integer>
 	<integer name="connection_timeout">10000</integer>
 	<integer name="socket_timeout">15000</integer>
-	
-	<integer name="min_session_keepalive_timeout_in_sec">60</integer>
-	<integer name="max_session_login_timeout_in_sec">360</integer>
-	<integer name="leave_program_timeout_in_sec">600</integer>
 
 </resources>

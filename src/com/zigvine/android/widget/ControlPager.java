@@ -1,5 +1,7 @@
 package com.zigvine.android.widget;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.zigvine.android.anim.AnimUtils;
+import com.zigvine.android.anim.AnimUtils.CustomAnimation;
 import com.zigvine.android.http.Request;
 import com.zigvine.android.http.Request.Resp;
 import com.zigvine.android.http.Request.ResponseListener;
@@ -19,15 +22,20 @@ import com.zigvine.android.utils.Utils;
 import com.zigvine.zagriculture.R;
 import com.zigvine.zagriculture.UIActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class ControlPager extends Pager
-		implements ResponseListener, IXListViewListener {
+		implements ResponseListener, IXListViewListener, OnItemClickListener {
 
 	XListView list;
 	TextView refresh, loader;
@@ -35,13 +43,14 @@ public class ControlPager extends Pager
 	int requestId;
 	long currentGroup;
 	MonitorAdapter adapter;
-	Map<Long, Resp> cachedData = new ConcurrentHashMap<Long, Resp>();
+	Map<Long, GroupArray> cachedData = new ConcurrentHashMap<Long, GroupArray>();
 	Runnable fadeOutRefresh = new Runnable() {
 		@Override
 		public void run() {
 			if (refresh != null && refresh.getVisibility() == View.VISIBLE) {
 				Animation anim = AnimUtils.FadeOut.loadAnimation(mContext, 300);
 				anim.setAnimationListener(AnimUtils.loadEndListener(refresh, View.GONE));
+				anim.setStartOffset(Refreshed_Disappear_Delay_Ms);
 				refresh.startAnimation(anim);
 			}
 		}
@@ -49,6 +58,46 @@ public class ControlPager extends Pager
 	
 	final static long Loading_Disappear_Delay_Ms = 500l;
 	final static long Refreshed_Disappear_Delay_Ms = 1000l;
+	
+	public static class GroupData {
+		public JSONObject json;
+		public Date time;
+		public boolean isEnabled;
+		
+		public GroupData(JSONObject d, Date t) {
+			json = d;
+			time = t;
+			isEnabled = true;
+		}
+	}
+	
+	public static class GroupArray extends ArrayList<GroupData> {
+		public static final long serialVersionUID = 1L;
+		public Date time;
+		public boolean success;
+		public Object obj;
+		public int statusCode;
+		public GroupArray(Resp resp, String dataNameInJson) {
+			time = resp.time;
+			success = resp.success;
+			obj = resp.obj;
+			statusCode = resp.statusCode;
+			JSONObject json = resp.json;
+			if (json != null) {
+				try {
+					JSONArray arr = json.getJSONArray(dataNameInJson);
+					for (int i = 0; i < arr.length(); i++) {
+						JSONObject obj = arr.getJSONObject(i);
+						GroupData g = new GroupData(obj, time);
+						add(g);
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	
 	public ControlPager(UIActivity<?> context) {
 		super(context);
@@ -64,6 +113,7 @@ public class ControlPager extends Pager
 		list.setEmptyView(findViewById(R.id.monitor_empty));
 		list.setPullRefreshEnable(true);
 		list.setPullLoadEnable(false);
+		list.setOnItemClickListener(this);
 		loader = (TextView) findViewById(R.id.monitor_loading);
 		loader.setVisibility(View.GONE);
 		adapter = new MonitorAdapter(mContext);
@@ -73,8 +123,15 @@ public class ControlPager extends Pager
 		list.setXListViewListener(this);
 	}
 	
+	@Override
 	public void refreshData(long groupid) {
 		refreshData(groupid, false);
+	}
+	
+	@Override
+	public void refreshDataWithoutFetch(long groupid) {
+		currentGroup = groupid;
+		adapter.notifyDataSetChanged();
 	}
 	
 	@Override
@@ -83,13 +140,20 @@ public class ControlPager extends Pager
 			refreshData(currentGroup, true);
 		}
 	}
+	
+	@Override
+	public void notifyLastRefreshTime() {
+		if (currentGroup >= 0) {
+			refreshData(currentGroup, false);
+		}
+	}
 
 	private void refreshData(long groupid, boolean force) {
 		if (currentGroup != groupid) {
 			currentGroup = groupid;
 			adapter.notifyDataSetInvalidated();
 		}
-		Resp resp = cachedData.get(groupid);
+		GroupArray resp = cachedData.get(groupid);
 		if (resp != null && !force) {
 			// use already cached data
 			dropOutLoader();
@@ -97,11 +161,10 @@ public class ControlPager extends Pager
 			ignoreLastRequest();
 			String deltaTime = Utils.getDeltaTimeString(resp.time);
 			refresh.setText(deltaTime + "前更新");
-			if (refresh.getVisibility() == View.GONE) {
-				AnimUtils.FadeIn.startAnimation(refresh, 300);
-			}
-			refresh.getHandler().removeCallbacks(fadeOutRefresh);
-			refresh.getHandler().postDelayed(fadeOutRefresh, Refreshed_Disappear_Delay_Ms);
+			refresh.clearAnimation();
+			Animation anim = AnimUtils.FadeIn.loadAnimation(mContext, 300);
+			anim.setAnimationListener(AnimUtils.loadStartListener(refresh, View.VISIBLE, fadeOutRefresh));
+			refresh.startAnimation(anim);
 			adapter.notifyDataSetChanged();
 		} else {
 			if (loader.getVisibility() == View.GONE) {
@@ -123,11 +186,15 @@ public class ControlPager extends Pager
 	}
 	
 	@Override
-	public void onResp(int id, Resp resp) {
+	public void onResp(int id, Resp resp, Object...obj) {
 		if (id != requestId) return;
 		if (resp.success) {
 			dropOutLoader();
-			cachedData.put(currentGroup, resp);
+			if (cachedData.get(currentGroup) == null) {
+				list.startLayoutAnimation();
+			}
+			
+			cachedData.put(currentGroup, new GroupArray(resp, "data"));
 			refresh.setText("已更新");
 			list.setRefreshTime(Utils.DATETIME.format(resp.time));
 			adapter.notifyDataSetChanged();
@@ -139,11 +206,11 @@ public class ControlPager extends Pager
 	}
 
 	@Override
-	public void onErr(int id, String err, int httpCode) {
+	public void onErr(int id, String err, int httpCode, Object...obj) {
 		if (id != requestId) return;
 		dropOutLoader();
 		mContext.UI.toast(err);
-	}
+}
 	
 	private void dropOutLoader() {
 		if (loader.getVisibility() == View.VISIBLE) {
@@ -155,7 +222,7 @@ public class ControlPager extends Pager
 		list.stopRefresh();
 	}
 	
-	public class MonitorAdapter extends BaseAdapter {
+	public class MonitorAdapter extends BaseAdapter implements View.OnClickListener, ResponseListener {
 		
 		private UIActivity<?> activity;
 
@@ -163,25 +230,56 @@ public class ControlPager extends Pager
 			activity = context;
 		}
 		
-		private JSONArray getData() {
+		private GroupArray getData() {
 			if (cachedData != null) {
-				Resp resp = cachedData.get(currentGroup);
-				if (resp != null) {
-					try {
-						return resp.json.getJSONArray("data");
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-				}
+				GroupArray resp = cachedData.get(currentGroup);
+				return resp;
 			}
 			return null;
 		}
 		
+		public boolean isItemEnabled(int position) {
+			return isItemEnabled(currentGroup, position);
+		}
+		
+		public boolean isItemEnabled(long groupid, int position) {
+			if (cachedData != null) {
+				GroupArray resp = cachedData.get(groupid);
+				if (resp != null && position < resp.size()) {
+					GroupData g = resp.get(position);
+					if (g != null) {
+						return g.isEnabled;
+					}
+				}
+			}
+			return false;
+		}
+		
+		public void setItemEnabled(int position, boolean enable) {
+			setItemEnabled(currentGroup, position, enable);
+		}
+		
+		public void setItemEnabled(long groupid, int position, boolean enable) {
+			if (cachedData != null) {
+				GroupArray resp = cachedData.get(groupid);
+				if (resp != null && position < resp.size()) {
+					GroupData g = resp.get(position);
+					if (g != null) {
+						//log("set enalbe(" + g.isEnabled + ")=" + enable + ", for " + g.toString());
+						g.isEnabled = enable;
+						if (groupid == currentGroup) {
+							notifyDataSetChanged();
+						}
+					}
+				}
+			}
+		}
+		
 		@Override
 		public int getCount() {
-			JSONArray data = getData();
+			GroupArray data = getData();
 			if (data != null) {
-				return data.length();
+				return data.size();
 			}
 			return 0;
 		}
@@ -189,11 +287,11 @@ public class ControlPager extends Pager
 		@Override
 		public Object getItem(int position) {
 			try {
-				JSONArray data = getData();
+				GroupArray data = getData();
 				if (data != null) {
-					return data.getJSONObject(position);
+					return data.get(position).json;
 				}
-			} catch (JSONException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			return null;
@@ -203,7 +301,7 @@ public class ControlPager extends Pager
 		public long getItemId(int position) {
 			try {
 				JSONObject json = (JSONObject) getItem(position);
-				String mac = json.getString("deviceId");
+				String mac = json.getString("deviceID");
 				return Utils.mac2long(mac);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -222,32 +320,156 @@ public class ControlPager extends Pager
 			TextView time = (TextView) convertView.findViewById(R.id.monitor_time);
 			ImageView qid = (ImageView) convertView.findViewById(R.id.quotaId);
 			View alarm = convertView.findViewById(R.id.alarm_mark);
+			View progressbar = convertView.findViewById(R.id.item_progressbar);
+			boolean isEnabled = isItemEnabled(position);
+			if (isEnabled) {
+				progressbar.setVisibility(View.GONE);
+				convertView.setClickable(false);
+			} else {
+				progressbar.setVisibility(View.VISIBLE);
+				convertView.setClickable(true);
+			}
 			alarm.setVisibility(View.GONE);
 			if (position == 0) {
-				convertView.setBackgroundResource(R.drawable.white_bg_top);
+				convertView.setBackgroundResource(R.drawable.pageritem_bg_top);
 			} else {
-				convertView.setBackgroundResource(R.drawable.white_bg);
+				convertView.setBackgroundResource(R.drawable.pageritem_bg);
 			}
 			try {
 				JSONObject json = (JSONObject) getItem(position);
 				if (json != null) {
-					String s = json.getString("deviceTypeID");
+					String s = json.getString("deviceName");
 					dname.setText(s);
-					s = json.getString("deviceName");
-					qname.setText(s);
 					JSONArray arr = json.getJSONArray("quota");
-					s = arr.getString(json.getInt("num"));
-					qvalue.setText(s);
+					s = arr.getString(0);
+					qname.setText(s);
+					s = arr.getJSONObject(3/*2 means cmdlist, 3 means state list*/).getString(json.getInt("state") + "");
+					qvalue.setText("状态：" + s);
 					s = json.getString("date");
 					time.setText(s);
 					int id = json.getInt("quotaID");
 					qid.setImageResource(Quota.ICONS[id]);
+					final ViewGroup ch = (ViewGroup) convertView.findViewById(R.id.control_items);
+					ch.removeAllViews();
+					arr = json.getJSONArray("cmdList");
+					for (int i = 0; i < arr.length(); i++) {
+						JSONArray subarr = arr.getJSONArray(i);
+						String name = subarr.getString(1);
+						int status = subarr.getInt(0);
+						TextView tv = new TextView(mContext);
+						
+						if (i == 0) {
+							//
+						} else {
+							View v = new View(mContext);
+							v.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+							v.setBackgroundColor(0xffaaaaaa);
+							ch.addView(v);
+						}
+						tv.setPadding(40, 10, 40, 10);
+						tv.setTextSize(20);
+						tv.setText(name);
+						tv.setBackgroundResource(R.drawable.title_btn);
+						tv.setOnClickListener(this);
+						tv.setTag(new int[] {position, status});
+						ch.addView(tv);
+					}
 					
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			return convertView;
+		}
+
+		@Override
+		public void onClick(View v) {
+			//log(v.getTag().toString());
+			final TextView tv = (TextView) v;
+			int[] data = (int[]) tv.getTag();
+			final int position = data[0];
+			final int state = data[1];
+			final long groupid = currentGroup;
+			if (!isItemEnabled(position)) return; // cannot operate on disabled item
+			final Object obj = getItem(position);
+			if (obj == null) return;
+			String dev = "";
+			JSONObject json = (JSONObject) getItem(position);
+			if (json != null) {
+				try {
+					dev = json.getString("deviceID");
+				} catch (JSONException e) {
+					e.printStackTrace();
+					return;
+				}
+			}
+			final String deviceID = dev;
+			new AlertDialog.Builder(mContext)
+			.setTitle("发送控制指令")
+			.setIcon(R.drawable.alarm_icon)
+			.setMessage("确定对该设备进行【" + tv.getText() + "】操作？")
+			.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					Request request = new Request(Request.SendCommand);  // post method
+					request.setDebug(true); // just for debug
+					request.setParam("deviceID", deviceID);
+					request.setParam("state", String.valueOf(state));
+					request.asyncRequest(MonitorAdapter.this, position, obj.hashCode(), groupid);
+					// TODO ..... disable position
+					setItemEnabled(groupid, position, false);
+				}
+			})
+			.setNegativeButton(android.R.string.cancel, null).show();
+		}
+
+		@Override
+		public void onResp(int id, Resp resp, Object... obj) {
+			int hash = (Integer) obj[0];
+			long groupid = (Long) obj[1];
+			Object o = null;
+			if (cachedData != null) {
+				GroupArray r = cachedData.get(groupid);
+				if (r != null) {
+					try {
+						GroupData g = r.get(id);
+						o = g.json;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			if (o != null && o.hashCode() == hash) {
+				if (resp.success) {
+					log("success send");
+				} else {
+					log("fail send");
+				}
+				log("onResp, recovery enalbe");
+				setItemEnabled(groupid, id, true);
+			}
+		}
+
+		@Override
+		public void onErr(int id, String err, int httpCode, Object... obj) {
+			int hash = (Integer) obj[0];
+			long groupid = (Long) obj[1];
+			Object o = null;
+			if (cachedData != null) {
+				GroupArray r = cachedData.get(groupid);
+				if (r != null) {
+					try {
+						GroupData g = r.get(id);
+						o = g.json;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			if (o != null && o.hashCode() == hash) {
+				log("onErr, recovery enalbe");
+				setItemEnabled(groupid, id, true);
+			}
 		}
 		
 	}
@@ -260,5 +482,48 @@ public class ControlPager extends Pager
 	@Override
 	public void onLoadMore() {
 		
+	}
+
+	CustomAnimation mCustomAnimation;
+	
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+		final ViewGroup vg = (ViewGroup) view.findViewById(R.id.more_control);
+		final ViewGroup ch = (ViewGroup) view.findViewById(R.id.control_items);
+		
+		final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) (vg.getLayoutParams());
+		final int margin = Utils.dp2px(mContext, 10);
+		AnimUtils.CustomAnimation.Callback Call_back = new AnimUtils.CustomAnimation.Callback() {
+			@Override
+			public void process(int value) {
+				//log(value + "");
+				if (value < 2 * margin) {
+					lp.setMargins(0, value/2, 0, value/2);
+					lp.height = 0;
+				} else {
+					lp.setMargins(0, margin, 0, margin);
+					lp.height = value - margin * 2;
+				}
+				vg.setLayoutParams(lp);
+				vg.requestLayout();
+			}
+			@Override
+			public void onAnimationEnd() {}
+		};
+		if (mCustomAnimation != null) {
+			mCustomAnimation.cancel();
+		}
+		
+		ch.measure(0, 0);
+		int trueHeight = ch.getMeasuredHeight() + margin * 2;
+		
+		
+		if (lp.height == 0) {
+			mCustomAnimation = new AnimUtils.CustomAnimation(300, 0, trueHeight, Call_back);
+		} else {
+			mCustomAnimation = new AnimUtils.CustomAnimation(300, trueHeight, 0, Call_back);
+		}
+		
+		mCustomAnimation.startAnimation();
 	}
 }

@@ -42,6 +42,7 @@ public class MonitorPager extends Pager
 			if (refresh != null && refresh.getVisibility() == View.VISIBLE) {
 				Animation anim = AnimUtils.FadeOut.loadAnimation(mContext, 300);
 				anim.setAnimationListener(AnimUtils.loadEndListener(refresh, View.GONE));
+				anim.setStartOffset(Refreshed_Disappear_Delay_Ms);
 				refresh.startAnimation(anim);
 			}
 		}
@@ -73,14 +74,28 @@ public class MonitorPager extends Pager
 		list.setXListViewListener(this);
 	}
 	
+	@Override
 	public void refreshData(long groupid) {
 		refreshData(groupid, false);
+	}
+	
+	@Override
+	public void refreshDataWithoutFetch(long groupid) {
+		currentGroup = groupid;
+		adapter.notifyDataSetChanged();
 	}
 	
 	@Override
 	public void refreshCurrentGroupNow() {
 		if (currentGroup >= 0) {
 			refreshData(currentGroup, true);
+		}
+	}
+	
+	@Override
+	public void notifyLastRefreshTime() {
+		if (currentGroup >= 0) {
+			refreshData(currentGroup, false);
 		}
 	}
 
@@ -97,11 +112,10 @@ public class MonitorPager extends Pager
 			ignoreLastRequest();
 			String deltaTime = Utils.getDeltaTimeString(resp.time);
 			refresh.setText(deltaTime + "前更新");
-			if (refresh.getVisibility() == View.GONE) {
-				AnimUtils.FadeIn.startAnimation(refresh, 300);
-			}
-			refresh.getHandler().removeCallbacks(fadeOutRefresh);
-			refresh.getHandler().postDelayed(fadeOutRefresh, Refreshed_Disappear_Delay_Ms);
+			refresh.clearAnimation();
+			Animation anim = AnimUtils.FadeIn.loadAnimation(mContext, 300);
+			anim.setAnimationListener(AnimUtils.loadStartListener(refresh, View.VISIBLE, fadeOutRefresh));
+			refresh.startAnimation(anim);
 			adapter.notifyDataSetChanged();
 		} else {
 			if (loader.getVisibility() == View.GONE) {
@@ -123,18 +137,22 @@ public class MonitorPager extends Pager
 	}
 	
 	@Override
-	public void onResp(int id, Resp resp) {
+	public void onResp(int id, Resp resp, Object...obj) {
 		if (id != requestId) return;
 		dropOutLoader();
+		if (cachedData.get(currentGroup) == null) {
+			list.startLayoutAnimation();
+		}
 		cachedData.put(currentGroup, resp);
 		refresh.setText("已更新");
 		list.setRefreshTime(Utils.DATETIME.format(resp.time));
 		adapter.notifyDataSetChanged();
+		
 		mContext.onRefresh(this);
 	}
 
 	@Override
-	public void onErr(int id, String err, int httpCode) {
+	public void onErr(int id, String err, int httpCode, Object...obj) {
 		if (id != requestId) return;
 		dropOutLoader();
 		mContext.UI.toast(err);
@@ -218,9 +236,9 @@ public class MonitorPager extends Pager
 			ImageView qid = (ImageView) convertView.findViewById(R.id.quotaId);
 			View alarm = convertView.findViewById(R.id.alarm_mark);
 			if (position == 0) {
-				convertView.setBackgroundResource(R.drawable.white_bg_top);
+				convertView.setBackgroundResource(R.drawable.pageritem_bg_top);
 			} else {
-				convertView.setBackgroundResource(R.drawable.white_bg);
+				convertView.setBackgroundResource(R.drawable.pageritem_bg);
 			}
 			try {
 				JSONObject json = (JSONObject) getItem(position);
