@@ -458,7 +458,7 @@ public class ControlPager extends Pager
 			long groupid = (Long) obj[1];
 			Object o = null;
 			String devID = "";
-			int lastState = 0;
+			int lastState = -1;
 			int refreshCount = 0;
 			GroupData g = null;
 			if (obj.length > 2) {
