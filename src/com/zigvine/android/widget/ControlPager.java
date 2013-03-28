@@ -64,11 +64,13 @@ public class ControlPager extends Pager
 		public JSONObject json;
 		public Date time;
 		public boolean isEnabled;
+		public boolean isShrinked;
 		
 		public GroupData(JSONObject d, Date t) {
 			json = d;
 			time = t;
 			isEnabled = true;
+			isShrinked = true;
 		}
 	}
 	
@@ -289,7 +291,7 @@ public class ControlPager extends Pager
 			try {
 				GroupArray data = getData();
 				if (data != null) {
-					return data.get(position).json;
+					return data.get(position);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -299,14 +301,7 @@ public class ControlPager extends Pager
 
 		@Override
 		public long getItemId(int position) {
-			try {
-				JSONObject json = (JSONObject) getItem(position);
-				String mac = json.getString("deviceID");
-				return Utils.mac2long(mac);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			return 0;
+			return position;
 		}
 
 		@Override
@@ -335,8 +330,9 @@ public class ControlPager extends Pager
 			} else {
 				convertView.setBackgroundResource(R.drawable.pageritem_bg);
 			}
+			GroupData gd = (GroupData) getItem(position);
 			try {
-				JSONObject json = (JSONObject) getItem(position);
+				JSONObject json = gd.json;
 				if (json != null) {
 					String s = json.getString("deviceName");
 					dname.setText(s);
@@ -379,6 +375,36 @@ public class ControlPager extends Pager
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
+			
+			final ViewGroup vg = (ViewGroup) convertView.findViewById(R.id.more_control);
+			final ViewGroup ch = (ViewGroup) convertView.findViewById(R.id.control_items);
+			final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) (vg.getLayoutParams());
+			if (convertView.getTag() != null) {
+				int lastPos = (Integer) convertView.getTag();
+				if (lastPos != position) {
+					// get from recycler and use in other position
+					// need to stop the animation
+					if (vg.getTag() != null) {
+						CustomAnimation anim = (CustomAnimation) vg.getTag();
+						anim.cancel();
+						vg.setTag(null);
+					}
+				}
+			}
+			
+			if (gd.isShrinked) {
+				lp.topMargin = 0;
+				lp.bottomMargin = 0;
+				lp.height = 0;
+			} else {
+				final int margin = Utils.dp2px(mContext, 10);
+				lp.topMargin = margin;
+				lp.bottomMargin = margin;
+				ch.measure(0, 0);
+				lp.height = ch.getMeasuredHeight();
+			}
+			vg.setLayoutParams(lp);
+			convertView.setTag(position);
 			return convertView;
 		}
 
@@ -394,7 +420,7 @@ public class ControlPager extends Pager
 			final Object obj = getItem(position);
 			if (obj == null) return;
 			String dev = "";
-			JSONObject json = (JSONObject) getItem(position);
+			final JSONObject json = ((GroupData) obj).json;
 			if (json != null) {
 				try {
 					dev = json.getString("deviceID");
@@ -402,6 +428,8 @@ public class ControlPager extends Pager
 					e.printStackTrace();
 					return;
 				}
+			} else {
+				return;
 			}
 			final String deviceID = dev;
 			new AlertDialog.Builder(mContext)
@@ -416,7 +444,7 @@ public class ControlPager extends Pager
 					if (BuildConfig.DEBUG) request.setDebug(true); // just for debug
 					request.setParam("deviceID", deviceID);
 					request.setParam("state", String.valueOf(state));
-					request.asyncRequest(MonitorAdapter.this, position, obj.hashCode(), groupid);
+					request.asyncRequest(MonitorAdapter.this, position, json.hashCode(), groupid);
 					// TODO ..... disable position
 					setItemEnabled(groupid, position, false);
 				}
@@ -529,6 +557,7 @@ public class ControlPager extends Pager
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+		pos = (int) id; // very important
 		final ViewGroup vg = (ViewGroup) view.findViewById(R.id.more_control);
 		final ViewGroup ch = (ViewGroup) view.findViewById(R.id.control_items);
 		
@@ -561,12 +590,14 @@ public class ControlPager extends Pager
 		
 		ch.measure(0, 0);
 		int trueHeight = ch.getMeasuredHeight() + margin * 2;
-		
-		
-		if (lp.height == 0) {
-			mCustomAnimation = new AnimUtils.CustomAnimation(300, 0, trueHeight, Call_back);
+		int currentHeight = lp.height + lp.topMargin + lp.bottomMargin;
+		GroupData gd = (GroupData) adapter.getItem(pos);		
+		if (gd.isShrinked) {
+			mCustomAnimation = new AnimUtils.CustomAnimation(300, currentHeight, trueHeight, Call_back);
+			gd.isShrinked = false;
 		} else {
-			mCustomAnimation = new AnimUtils.CustomAnimation(300, lp.height + lp.topMargin + lp.bottomMargin, 0, Call_back);
+			mCustomAnimation = new AnimUtils.CustomAnimation(300, currentHeight, 0, Call_back);
+			gd.isShrinked = true;
 		}
 		mCustomAnimation.setAnimationFrequency(60);
 		mCustomAnimation.startAnimation();

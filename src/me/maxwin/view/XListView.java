@@ -110,6 +110,7 @@ public class XListView extends ListView implements OnScrollListener {
 								.removeGlobalOnLayoutListener(this);
 					}
 				});
+		setSelector(R.color.transparent);
 	}
 
 	@Override
