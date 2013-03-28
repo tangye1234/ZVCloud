@@ -36,7 +36,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	private static final int VERIFY_ID = 0;
 	private static final int GET_GROUP_LIST_ID = 1;
 	
-	private static final boolean isPreAccountSet = true;
+	private static final boolean isPreAccountSet = BuildConfig.DEBUG;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

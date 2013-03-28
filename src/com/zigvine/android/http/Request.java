@@ -24,6 +24,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
@@ -106,6 +109,15 @@ public class Request {
 	
 	public boolean request() throws JSONException {
 		return request(URL);
+	}
+	
+	public void setSoTimeout(int milisec) {
+		HttpParams params = httpRequest.getParams();
+		if (params == null) {
+			params = new BasicHttpParams();
+		}
+		HttpConnectionParams.setSoTimeout(params, milisec);
+		httpRequest.setParams(params);
 	}
 	
 	public boolean request(String host) throws JSONException {

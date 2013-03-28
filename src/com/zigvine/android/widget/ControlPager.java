@@ -19,6 +19,7 @@ import com.zigvine.android.http.Request.Resp;
 import com.zigvine.android.http.Request.ResponseListener;
 import com.zigvine.android.utils.Quota;
 import com.zigvine.android.utils.Utils;
+import com.zigvine.zagriculture.BuildConfig;
 import com.zigvine.zagriculture.R;
 import com.zigvine.zagriculture.UIActivity;
 
@@ -92,7 +93,6 @@ public class ControlPager extends Pager
 						add(g);
 					}
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -343,7 +343,7 @@ public class ControlPager extends Pager
 					JSONArray arr = json.getJSONArray("quota");
 					s = arr.getString(0);
 					qname.setText(s);
-					s = arr.getJSONObject(3/*2 means cmdlist, 3 means state list*/).getString(json.getInt("state") + "");
+					s = json.getString("stateDesc");
 					qvalue.setText("状态：" + s);
 					s = json.getString("date");
 					time.setText(s);
@@ -412,7 +412,8 @@ public class ControlPager extends Pager
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					Request request = new Request(Request.SendCommand);  // post method
-					request.setDebug(true); // just for debug
+					request.setSoTimeout(30000); // a must for that
+					if (BuildConfig.DEBUG) request.setDebug(true); // just for debug
 					request.setParam("deviceID", deviceID);
 					request.setParam("state", String.valueOf(state));
 					request.asyncRequest(MonitorAdapter.this, position, obj.hashCode(), groupid);
@@ -428,12 +429,22 @@ public class ControlPager extends Pager
 			int hash = (Integer) obj[0];
 			long groupid = (Long) obj[1];
 			Object o = null;
+			String devID = "";
+			int lastState = 0;
+			int refreshCount = 0;
+			GroupData g = null;
+			if (obj.length > 2) {
+				refreshCount = (Integer) obj[2];
+			}
+			
 			if (cachedData != null) {
 				GroupArray r = cachedData.get(groupid);
 				if (r != null) {
 					try {
-						GroupData g = r.get(id);
+						g = r.get(id);
 						o = g.json;
+						devID = g.json.getString("deviceID");
+						lastState = g.json.getInt("state");
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -441,11 +452,43 @@ public class ControlPager extends Pager
 			}
 			if (o != null && o.hashCode() == hash) {
 				if (resp.success) {
-					log("success send");
+					log("success send, count=" + refreshCount);
+					if (refreshCount > 0) {
+						GroupArray ga = new GroupArray(resp, "data");
+						GroupData newG = ga.get(0);
+						if (newG != null) {
+							g.json = newG.json;
+							g.time = new Date();
+							hash = g.json.hashCode();
+							try {
+								int newState = newG.json.getInt("state");
+								if (newState != lastState) {
+									setItemEnabled(groupid, id, true);
+									return;
+								}
+							} catch (JSONException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					if (refreshCount < 3) {
+						final Request request = new Request(Request.GetControl, true);
+						request.setParam("devID", devID);
+						request.setParam("GroupID", String.valueOf(groupid));
+						final int R_id = id;
+						final long R_groupid = groupid;
+						final int R_hash = hash;
+						final int R_count = refreshCount + 1;
+						getHandler().postDelayed(new Runnable() {
+							public void run() {
+								request.asyncRequest(MonitorAdapter.this, R_id, R_hash, R_groupid, R_count);
+							}
+						}, 2000);
+						return; // most important, continue lock this device
+					}
 				} else {
-					log("fail send");
+					mContext.UI.toast("命令发送失败！状态：" + resp.statusCode);
 				}
-				log("onResp, recovery enalbe");
 				setItemEnabled(groupid, id, true);
 			}
 		}
@@ -467,7 +510,7 @@ public class ControlPager extends Pager
 				}
 			}
 			if (o != null && o.hashCode() == hash) {
-				log("onErr, recovery enalbe");
+				mContext.UI.toast(err);
 				setItemEnabled(groupid, id, true);
 			}
 		}
@@ -483,8 +526,6 @@ public class ControlPager extends Pager
 	public void onLoadMore() {
 		
 	}
-
-	CustomAnimation mCustomAnimation;
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
@@ -510,6 +551,10 @@ public class ControlPager extends Pager
 			@Override
 			public void onAnimationEnd() {}
 		};
+		CustomAnimation mCustomAnimation = null;
+		if (vg.getTag() != null) {
+			mCustomAnimation = (CustomAnimation) vg.getTag();
+		}
 		if (mCustomAnimation != null) {
 			mCustomAnimation.cancel();
 		}
@@ -521,9 +566,10 @@ public class ControlPager extends Pager
 		if (lp.height == 0) {
 			mCustomAnimation = new AnimUtils.CustomAnimation(300, 0, trueHeight, Call_back);
 		} else {
-			mCustomAnimation = new AnimUtils.CustomAnimation(300, trueHeight, 0, Call_back);
+			mCustomAnimation = new AnimUtils.CustomAnimation(300, lp.height + lp.topMargin + lp.bottomMargin, 0, Call_back);
 		}
-		
+		mCustomAnimation.setAnimationFrequency(60);
 		mCustomAnimation.startAnimation();
+		vg.setTag(mCustomAnimation);
 	}
 }
