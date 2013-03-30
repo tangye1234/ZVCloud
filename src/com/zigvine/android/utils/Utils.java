@@ -48,5 +48,52 @@ public class Utils {
 		return (time / 3600000*24l) + "天";
 	}
 	
-	public static final SimpleDateFormat DATETIME = new SimpleDateFormat("yyyy-MM-dd HH时mm分ss", Locale.US);
+	public static class MathFloat {
+		public static float max(float[] d) {
+			if (d == null || d.length == 0) throw new IllegalArgumentException("param should not be empty");
+			int len = d.length;
+			float max = d[0];
+			for (int i = 1; i < len; i++) {
+				float v = d[i];
+				if (v >  max) max = v;
+			}
+			return max;
+		}
+		public static float min(float[] d) {
+			if (d == null || d.length == 0) throw new IllegalArgumentException("param should not be empty");
+			int len = d.length;
+			float min = d[0];
+			for (int i = 1; i < len; i++) {
+				float v = d[i];
+				if (v < min) min = v;
+			}
+			return min;
+		}
+	}
+	
+	public static class MathInt {
+		public static int max(int[] d) {
+			if (d == null || d.length == 0) throw new IllegalArgumentException("param should not be empty");
+			int len = d.length;
+			int max = d[0];
+			for (int i = 1; i < len; i++) {
+				int v = d[i];
+				if (v >  max) max = v;
+			}
+			return max;
+		}
+		public static int min(int[] d) {
+			if (d == null || d.length == 0) throw new IllegalArgumentException("param should not be empty");
+			int len = d.length;
+			int min = d[0];
+			for (int i = 1; i < len; i++) {
+				int v = d[i];
+				if (v < min) min = v;
+			}
+			return min;
+		}
+	}
+	
+	public static final SimpleDateFormat DATETIME = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+	public static final SimpleDateFormat DATE = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 }

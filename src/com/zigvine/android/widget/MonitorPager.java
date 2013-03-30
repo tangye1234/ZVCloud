@@ -284,7 +284,16 @@ public class MonitorPager extends Pager
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
 		pos = (int) id; // very important
-		
+		JSONObject json = (JSONObject) adapter.getItem(pos);
+		try {
+			String name = json.getString("DeviceName");
+			String deviceID = json.getString("DeviceId");
+			String quotaId = json.getString("QuotaId");
+			String quotaName = json.getString("QuotaName");
+			new GraphDialog(mContext, name, deviceID, quotaName, quotaId).show();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		
 	}
 }

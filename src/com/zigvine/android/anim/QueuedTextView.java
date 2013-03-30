@@ -1,7 +1,6 @@
 package com.zigvine.android.anim;
 
 import java.util.LinkedList;
-import java.util.Queue;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -12,7 +11,7 @@ import android.widget.TextView;
 
 public class QueuedTextView extends TextView {
 	
-	private Queue<CharSequence> queue = new LinkedList<CharSequence>();  
+	private LinkedList<CharSequence> queue = new LinkedList<CharSequence>();  
 	private Context mContext;
 	private boolean finished;
 
@@ -35,6 +34,8 @@ public class QueuedTextView extends TextView {
 	}
 
 	public void setQueuedText(CharSequence text) {
+		String last = (String) queue.peekLast();
+		if (last != null && last.equals(text)) return;
 		queue.offer(text);
 		if (finished) {
 			fadeOut();

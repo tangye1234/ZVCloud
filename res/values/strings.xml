@@ -22,6 +22,7 @@
     <string name="action_settings">设置</string>
     <string name="quota">指标</string>
     <string name="loading_list">正在载入数据&#8230;</string>
+    <string name="loading_data">正在获取数据，稍等片刻</string>
     <string name="loaded_list">载入成功</string>
     <string name="list_empty">列表为空</string>
     <string name="hello_world">Hello world!</string>

@@ -44,7 +44,7 @@ public class Request {
 		if (GLOBAL_DBG) {
 			URL = "http://218.246.112.92/dservice";
 		} else {
-			URL = "http://www.zigvine.com/dservice";
+			URL = "http://218.246.112.92/dservice";
 		}
 	}
 	
@@ -55,6 +55,7 @@ public class Request {
 	public static final String GetAlarm = "/getalarm";
 	public static final String GetControl = "/controldata";
 	public static final String SendCommand = "/sendcommand";
+	public static final String DataChart = "/datachart";
 	
 	private HttpManager httpManager;
 	private HttpRequestBase httpRequest;

@@ -174,7 +174,7 @@ public class ViewFlow extends AdapterView<Adapter> {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		//super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
 		final int width = MeasureSpec.getSize(widthMeasureSpec);
 		final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
@@ -184,15 +184,24 @@ public class ViewFlow extends AdapterView<Adapter> {
 		}
 
 		final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-		if (heightMode != MeasureSpec.EXACTLY && !isInEditMode()) {
+		/*if (heightMode != MeasureSpec.EXACTLY && !isInEditMode()) {
 			throw new IllegalStateException(
 					"ViewFlow can only be used in EXACTLY mode.");
-		}
+		}*/
 
 		// The children are given the same width and height as the workspace
+		int maxH = 0;
 		final int count = getChildCount();
 		for (int i = 0; i < count; i++) {
 			getChildAt(i).measure(widthMeasureSpec, heightMeasureSpec);
+			int h = getChildAt(i).getMeasuredHeight();
+			if (h > maxH) maxH = h;
+		}
+		
+		if (heightMode != MeasureSpec.EXACTLY) {
+			setMeasuredDimension(width, maxH);
+		} else {
+			setMeasuredDimension(width, MeasureSpec.getSize(heightMeasureSpec));
 		}
 
 		if (mFirstLayout) {
