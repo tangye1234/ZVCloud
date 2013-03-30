@@ -22,12 +22,14 @@ import com.zigvine.zagriculture.UIActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MonitorPager extends Pager
-		implements ResponseListener, IXListViewListener {
+		implements ResponseListener, IXListViewListener, OnItemClickListener {
 
 	XListView list;
 	TextView refresh, loader;
@@ -65,6 +67,7 @@ public class MonitorPager extends Pager
 		list.setEmptyView(findViewById(R.id.monitor_empty));
 		list.setPullRefreshEnable(true);
 		list.setPullLoadEnable(false);
+		list.setOnItemClickListener(this);
 		loader = (TextView) findViewById(R.id.monitor_loading);
 		loader.setVisibility(View.GONE);
 		adapter = new MonitorAdapter(mContext);
@@ -101,7 +104,7 @@ public class MonitorPager extends Pager
 
 	private void refreshData(long groupid, boolean force) {
 		if (currentGroup != groupid) {
-			currentGroup = groupid;
+			//currentGroup = groupid;
 			adapter.notifyDataSetInvalidated();
 		}
 		Resp resp = cachedData.get(groupid);
@@ -117,7 +120,8 @@ public class MonitorPager extends Pager
 			anim.setAnimationListener(AnimUtils.loadStartListener(refresh, View.VISIBLE, fadeOutRefresh));
 			refresh.startAnimation(anim);
 			adapter.notifyDataSetChanged();
-		} else {
+		} else if (request == null || !request.isOnFetching() || currentGroup != groupid) {
+			currentGroup = groupid;
 			if (loader.getVisibility() == View.GONE) {
 				loader.setVisibility(View.VISIBLE);
 				AnimUtils.DropIn.startAnimation(loader, 300);
@@ -126,6 +130,8 @@ public class MonitorPager extends Pager
 			request = new Request(Request.SnapShotData, true);
 			request.setParam("groupID", String.valueOf(groupid));
 			request.asyncRequest(this, requestId);
+		} else {
+			refreshDataWithoutFetch(groupid);
 		}
 	}
 	
@@ -214,14 +220,7 @@ public class MonitorPager extends Pager
 
 		@Override
 		public long getItemId(int position) {
-			try {
-				JSONObject json = (JSONObject) getItem(position);
-				String mac = json.getString("DeviceId");
-				return Utils.mac2long(mac);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			return 0;
+			return position;
 		}
 
 		@Override
@@ -279,6 +278,13 @@ public class MonitorPager extends Pager
 
 	@Override
 	public void onLoadMore() {
+		
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+		pos = (int) id; // very important
+		
 		
 	}
 }

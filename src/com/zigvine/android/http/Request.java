@@ -66,6 +66,7 @@ public class Request {
 	private int httpStatusCode;
 	private volatile boolean ignoreException;
 	private boolean isGetRequest;
+	private boolean requestDone;
 	private boolean DBG;
 	
 	public static class Resp /**FIXME serialized ?**/ {
@@ -101,6 +102,7 @@ public class Request {
 		path = uri_path;
 		ignoreException = false;
 		params = new ArrayList<BasicNameValuePair>();
+		requestDone = true;
 	}
 	
 	public void setDebug(boolean isDebug) {
@@ -120,8 +122,13 @@ public class Request {
 		httpRequest.setParams(params);
 	}
 	
+	public boolean isOnFetching() {
+		return !requestDone;
+	}
+	
 	public boolean request(String host) throws JSONException {
 		String content = null;
+		requestDone = false;
 		if (!ignoreException) {
 			try {
 				HttpEntity entity = null;
@@ -210,6 +217,7 @@ public class Request {
 			if (DBG) log("Response = " + json.toString(4));
 		}
 		if (DBG) log("request done");
+		requestDone = true;
 		return resp != null;
 	}
 

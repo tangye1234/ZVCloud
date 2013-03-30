@@ -152,7 +152,7 @@ public class ControlPager extends Pager
 
 	private void refreshData(long groupid, boolean force) {
 		if (currentGroup != groupid) {
-			currentGroup = groupid;
+			//currentGroup = groupid;
 			adapter.notifyDataSetInvalidated();
 		}
 		GroupArray resp = cachedData.get(groupid);
@@ -168,7 +168,8 @@ public class ControlPager extends Pager
 			anim.setAnimationListener(AnimUtils.loadStartListener(refresh, View.VISIBLE, fadeOutRefresh));
 			refresh.startAnimation(anim);
 			adapter.notifyDataSetChanged();
-		} else {
+		} else if (request == null || !request.isOnFetching() || currentGroup != groupid) {
+			currentGroup = groupid;
 			if (loader.getVisibility() == View.GONE) {
 				loader.setVisibility(View.VISIBLE);
 				AnimUtils.DropIn.startAnimation(loader, 300);
@@ -177,6 +178,8 @@ public class ControlPager extends Pager
 			request = new Request(Request.GetControl, true);
 			request.setParam("groupID", String.valueOf(groupid));
 			request.asyncRequest(this, requestId);
+		} else {
+			refreshDataWithoutFetch(groupid);
 		}
 	}
 	

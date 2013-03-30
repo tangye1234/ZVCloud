@@ -27,13 +27,13 @@ public class MainActivity extends UIActivity<MainActivity>
 	ViewFlow mViewFlow;
 	ViewFlowAdapter adapter;
 	SimpleFlowIndicator indicator;
-	TextView monitor, control, graph, alarm, title, alarm_count;
+	TextView monitor, control, /*graph, */alarm, title, alarm_count;
 	TextView[] views;
 	View moreMenu, refreshMenu, titleMain;
 	int currentPos;
 	long currentGroup;
 	
-	Pager[] pages = new Pager[4];
+	Pager[] pages = new Pager[3];
 	MonitorPager mMonitorPager;
 	ControlPager mControlPager;
 	AlarmPager mAlarmPager;
@@ -47,13 +47,13 @@ public class MainActivity extends UIActivity<MainActivity>
 		tabsDrawableUnselectedRes = new int[] {
 				R.drawable.monitor,
 				R.drawable.control,
-				R.drawable.graph,
+				//R.drawable.graph,
 				R.drawable.alarm
 			};
 		tabsDrawableSelectedRes = new int[] {
 				R.drawable.monitor_select,
 				R.drawable.control_select,
-				R.drawable.graph_select,
+				//R.drawable.graph_select,
 				R.drawable.alarm_select
 			};
 	}
@@ -68,7 +68,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		mAlarmPager = new AlarmPager(this);
 		pages[0] = mMonitorPager;
 		pages[1] = mControlPager;
-		pages[3] = mAlarmPager;
+		pages[2] = mAlarmPager;
 		
 		UI.createStandardSlidingMenu();
 		
@@ -101,10 +101,10 @@ public class MainActivity extends UIActivity<MainActivity>
 		
 		monitor = (TextView) findViewById(R.id.monitor);
 		control = (TextView) findViewById(R.id.control);
-		graph = (TextView) findViewById(R.id.graph);
+		//graph = (TextView) findViewById(R.id.graph);
 		alarm = (TextView) findViewById(R.id.alarm);
 		alarm_count = (TextView) findViewById(R.id.tab_alarm_count);
-		views = new TextView[] {monitor, control, graph, alarm};
+		views = new TextView[] {monitor, control, /*graph, */alarm};
 		
 		for (int i = 0; i < views.length; i++) {
 			views[i].setTag(i);
@@ -169,7 +169,7 @@ public class MainActivity extends UIActivity<MainActivity>
 			break;
 		case R.id.monitor:
 		case R.id.control:
-		case R.id.graph:
+		//case R.id.graph:
 		case R.id.alarm:
 			mViewFlow.setSelection((Integer) view.getTag());
 			break;
@@ -277,7 +277,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		@Override
 		public int getCount() {
 			// TODO Auto-generated method stub
-			return 4;
+			return activity.pages.length;
 		}
 
 		@Override
@@ -298,7 +298,7 @@ public class MainActivity extends UIActivity<MainActivity>
 				switch(position) {
 				case 0:
 				case 1:
-				case 3:
+				case 2:
 					convertView = activity.pages[position].getContentView();
 					break;
 				default:
