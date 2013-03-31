@@ -21,7 +21,6 @@ import com.zigvine.android.utils.Quota;
 import com.zigvine.android.utils.Utils;
 import com.zigvine.android.utils.Utils.MathFloat;
 import com.zigvine.android.widget.GraphView.OnAxisYTextCallback;
-import com.zigvine.zagriculture.MainApp;
 import com.zigvine.zagriculture.R;
 import com.zigvine.zagriculture.UIActivity;
 
@@ -353,21 +352,21 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 			TextView tv = (TextView) mWindow.findViewById(R.id.tx1);
 			tv.setTypeface(tf);
 			tv.setText(text[0]);
-			if (MainApp.getAPILevel() < 11) {
+			/*if (MainApp.getAPILevel() < 11) {
 				tv.measure(0, 0);
 				int left = Utils.dp2px(mContext, 2);
 				int top = Utils.dp2px(mContext, 22);
 				tv.layout(left, top, left + tv.getMeasuredWidth(), top + tv.getMeasuredHeight());
-			}
+			}*/
 			tv = (TextView) mWindow.findViewById(R.id.tx2);
 			tv.setTypeface(tf);
 			tv.setText(text[1]);
-			if (MainApp.getAPILevel() < 11) {
+			/*if (MainApp.getAPILevel() < 11) {
 				tv.measure(0, 0);
 				int left = Utils.dp2px(mContext, 2);
 				int top = Utils.dp2px(mContext, 62);
 				tv.layout(left, top, left + tv.getMeasuredWidth(), top + tv.getMeasuredHeight());
-			}
+			}*/
 		}
 	
 	}
