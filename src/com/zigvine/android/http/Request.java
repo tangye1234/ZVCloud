@@ -22,6 +22,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
@@ -114,12 +115,21 @@ public class Request {
 		return request(URL);
 	}
 	
-	public void setSoTimeout(int milisec) {
+	public void setConnManagerTimeout(int millisec) {
 		HttpParams params = httpRequest.getParams();
 		if (params == null) {
 			params = new BasicHttpParams();
 		}
-		HttpConnectionParams.setSoTimeout(params, milisec);
+		ConnManagerParams.setTimeout(params, millisec);
+		httpRequest.setParams(params);
+	}
+	
+	public void setSoTimeout(int millisec) {
+		HttpParams params = httpRequest.getParams();
+		if (params == null) {
+			params = new BasicHttpParams();
+		}
+		HttpConnectionParams.setSoTimeout(params, millisec);
 		httpRequest.setParams(params);
 	}
 	

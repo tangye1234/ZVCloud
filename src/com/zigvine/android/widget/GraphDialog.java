@@ -25,6 +25,7 @@ import com.zigvine.zagriculture.R;
 import com.zigvine.zagriculture.UIActivity;
 
 import android.app.Dialog;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +65,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 		mQuotaName = quotaname;
 		mQuotaID = quotaid;
 		//handler = new Handler();
-		pool = new RequestPool(4);
+		pool = new RequestPool(3 );
 		setupView();
 	}
 
@@ -107,7 +108,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 		private int initPos;
 		private int curPos;
 		
-		private float ymin, ymax;
+		private float ymin, ymax, oldmin, oldmax;
 		
 		LinkedList<long[]> x = new LinkedList<long[]>();
 		LinkedList<float[]> y = new LinkedList<float[]>();
@@ -226,9 +227,14 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 						float padding = 0;
 						if (leny > 0) {
 							padding = leny / 16;
+							ymin = miny - padding;
+							ymax = maxy + padding;
+							oldmin = ymin;
+							oldmax = ymax;
+						} else {
+							 ymin = oldmin;
+							 ymax = oldmax;
 						}
-						ymin = miny - padding;
-						ymax = maxy + padding;
 					}
 					
 				}
@@ -253,6 +259,8 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 			request.setParam("startTime", Utils.DATETIME.format(start.getTime()));
 			start.add(Calendar.HOUR, 6);
 			request.setParam("endTime", Utils.DATETIME.format(start.getTime()));
+			request.setSoTimeout(23000);
+			request.setConnManagerTimeout(15000);
 			//request.asyncRequest(this, offsetFromInit);
 			pool.addRequest(request, this, offsetFromInit);
 			onConnectionStartOrEnd();
@@ -319,9 +327,12 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 
 		@Override
 		public void onText(String[] text) {
+			Typeface tf = Typeface.createFromAsset(getContext().getAssets(),"fonts/eurostileRegular.ttf");
 			TextView tv = (TextView) mWindow.findViewById(R.id.tx1);
+			tv.setTypeface(tf);
 			tv.setText(text[0]);
 			tv = (TextView) mWindow.findViewById(R.id.tx2);
+			tv.setTypeface(tf);
 			tv.setText(text[1]);
 		}
 	

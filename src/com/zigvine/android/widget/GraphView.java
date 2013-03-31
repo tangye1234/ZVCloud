@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,7 +20,7 @@ public class GraphView extends View {
 	private static final String TAG = "GroupView";
 	
 	protected Context mContext;
-	protected int width, height, dataH, wordH;
+	protected int width, height, dataH, wordH, dp;
 	private int[] x;
 	private float[] y;
 	private float YMIN, YMAX, YLEN;
@@ -48,12 +49,16 @@ public class GraphView extends View {
 	private void init(Context context) {
 		mContext = context;
 		wordH = Utils.dp2px(context, 40);
+		dp = Utils.dp2px(context, 2);
 		handler = new Handler();
+		Typeface tf = Typeface.createFromAsset(getContext().getAssets(),"fonts/eurostileRegular.ttf");
 		
 		mPaint = new Paint();
 		mPaint.setAntiAlias(true);
 		mPaint.setColor(0xff26c3f7);
 		mPaint.setStrokeWidth(1);
+		mPaint.setTypeface(tf);
+		//mPaint.setFakeBoldText(true);
 		mPaint.setTextSize(Utils.dp2px(context, 14));
 		
 		linePaint = new Paint();
@@ -172,10 +177,10 @@ public class GraphView extends View {
 			float starty, stopy;
 			if (longX) {
 				starty = 0;
-				stopy = dataH + 10;
+				stopy = dataH + dp * 2;
 			} else {
 				starty = dataH;
-				stopy = dataH + 5;
+				stopy = dataH + dp;
 			}
 			int time = start + i * 30 * 60;
 			float startX = convertX(time);
@@ -193,7 +198,7 @@ public class GraphView extends View {
 		int h = calendar.get(Calendar.HOUR_OF_DAY);
 		if (h > 0 && h < 6) {
 			float startX = convertX(start + (6 - h) * 60 * 60);
-			c.drawLine(startX, dataH + wordH - 30, startX, dataH + wordH, axisPaint);
+			c.drawLine(startX, dataH + wordH / 2 + dp * 2, startX, dataH + wordH, axisPaint);
 			if (h < 3) {
 				calendar.add(Calendar.HOUR, -h - 1);
 				String text = Utils.DATE.format(calendar.getTime());
