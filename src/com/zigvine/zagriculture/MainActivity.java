@@ -38,6 +38,7 @@ public class MainActivity extends UIActivity<MainActivity>
 	ControlPager mControlPager;
 	AlarmPager mAlarmPager;
 	boolean refreshOnStart;
+	String currentGroupName, currentGroupDesc;
 	
 	public static final String POSITION_EXTRA = "com.zigvine.zagriculture.jump_position";
 	
@@ -193,9 +194,9 @@ public class MainActivity extends UIActivity<MainActivity>
 		try {
 			JSONObject json = (JSONObject) obj;
 			if (json != null) {
-				String name = json.getString("GroupName");
-				//String desc = json.getString("GroupDesc");
-				title.setText(name);
+				currentGroupName = json.getString("GroupName");
+				currentGroupDesc = json.getString("GroupDesc");
+				title.setText(currentGroupName);
 				// TODO too much data connection here
 				//MainApp.selectStore(id, name, desc);
 				currentGroup = id;
@@ -235,11 +236,15 @@ public class MainActivity extends UIActivity<MainActivity>
 	
 	@Override
 	public void onRefresh(Pager pager) {
-		/*if (pager == mMonitorPager) {
-			log("Refresh pager of " + pager.toString());
-			//adapter.notifyDataSetChanged();
-		}*/
-		// TODO
+		String tab = "";
+		if (pager == mMonitorPager) {
+			tab = getString(R.string.monitor);
+		} else if (pager == mControlPager) {
+			tab = getString(R.string.control);
+		} else if (pager == mAlarmPager) {
+			tab = getString(R.string.alarm);
+		}
+		pager.setEmptyViewText("【" + currentGroupName + "】中没有" + tab + "项目");
 	}
 	
 	@Override

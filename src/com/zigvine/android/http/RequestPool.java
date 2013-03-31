@@ -74,5 +74,25 @@ public class RequestPool {
 	public int getRunningCount() {
 		return RunningCount;
 	}
+	
+	public void clearAndShutDownAll() {
+		for (Requester r : pool) {
+			r.r.shutdown();
+		}
+	}
+	
+	public boolean hasID(int id) {
+		for (Requester r : pool) {
+			if (r.id == id) return true;
+		}
+		return false;
+	}
+	
+	public Requester getByID(int id) {
+		for (Requester r : pool) {
+			if (r.id == id) return r;
+		}
+		return null;
+	}
 
 }

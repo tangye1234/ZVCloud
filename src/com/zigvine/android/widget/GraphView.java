@@ -78,15 +78,11 @@ public class GraphView extends View {
 	 * @param datay
 	 */
 	public void setDataXY(int[] datax, float[] datay, int len) {
-		length = len;
-		x = datax.clone();
-		y = datay.clone();
-		// TODO invalid();
-		/*float ymax = MathFloat.max(y);
-		float ymin = MathFloat.min(y);
-		setAxisY(ymin, ymax);
-		*/
-		//postInvalidate();
+		if (len > 0) {
+			length = len;
+			x = datax.clone();
+			y = datay.clone();
+		}
 	}
 	
 	public void setXStart(long start) {
@@ -188,7 +184,7 @@ public class GraphView extends View {
 			if (longX) {
 				calendar.setTimeInMillis((xOffset + time) * 1000);
 				int q = calendar.get(Calendar.HOUR_OF_DAY);
-				String text = q + ":00";
+				String text = q + "点";
 				float txtWidth = mPaint.measureText(text);
 				c.drawText(text, startX - txtWidth / 2, dataH + wordH / 2, mPaint);
 			}

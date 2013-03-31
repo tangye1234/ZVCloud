@@ -26,6 +26,8 @@ import com.zigvine.zagriculture.R;
 import com.zigvine.zagriculture.UIActivity;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.View;
@@ -36,7 +38,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class GraphDialog extends Dialog implements ViewSwitchListener {
+public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismissListener {
 	
 	private static final String TAG = "GroupDialog";
 
@@ -52,7 +54,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 	
 	QueuedTextView refreshTime;
 	TextView unitInfo;
-	View progress;
+	View progress, loading;
 	ViewFlow list;
 	DataFlowAdapter adapter;
 	RequestPool pool;
@@ -66,7 +68,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 		mQuotaName = quotaname;
 		mQuotaID = quotaid;
 		//handler = new Handler();
-		pool = new RequestPool(3 );
+		pool = new RequestPool(3);
 		setupView();
 	}
 
@@ -91,12 +93,14 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 		progress.setVisibility(View.GONE);
 		unitInfo = (TextView) mWindow.findViewById(R.id.dialog_info);
 		unitInfo.setText("获取图表单位");
+		loading = mWindow.findViewById(R.id.graph_loading);
 		
 		list = (ViewFlow) mWindow.findViewById(R.id.graph_content);
 		adapter = new DataFlowAdapter();
 		list.setAdapter(adapter, 1);
 		list.setOnViewSwitchListener(this);
 		
+		setOnDismissListener(this);
 		
 	}
 
@@ -134,8 +138,11 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 
 		@Override
 		public int getCount() {
-			// TODO Auto-generated method stub
-			return 3;
+			if (curPos == x.size() - 1) {
+				return 2;
+			} else {
+				return 3;
+			}
 		}
 
 		@Override
@@ -184,6 +191,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 			GraphView gv = (GraphView) convertView.findViewById(R.id.graph_view);
 			gv.setOnAxisYTextCallback(this);
 			int pos = curPos + (position - 1);
+			boolean showLoading = true;
 			
 			if (pos >= x.size() || pos < 0) {
 				// TODO nothing
@@ -196,13 +204,14 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 			} else {
 				long[] sx = x.get(pos);
 				int len = sx.length;
-				if (len > 0) {
-					int[] dx = new int[len];
-					for (int i = 0; i < len; i++) {
-						dx[i] = (int) ((sx[i] - currentTime.getTimeInMillis()) / 1000);
-					}
-					gv.setDataXY(dx, y.get(pos), len);
-					if (position == 1) {
+				int[] dx = new int[len];
+				for (int i = 0; i < len; i++) {
+					dx[i] = (int) ((sx[i] - currentTime.getTimeInMillis()) / 1000);
+				}
+				gv.setDataXY(dx, y.get(pos), len);
+				if (position == 1) {
+					showLoading = false;
+					if (len > 0) {
 						float[] dy = yrange.get(pos);
 						float miny = dy[0];
 						float maxy = dy[1];
@@ -237,7 +246,6 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 							 ymax = oldmax;
 						}
 					}
-					
 				}
 			}
 			int xmax = (position - 1) * 6 * 60 * 60;
@@ -245,6 +253,19 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 			gv.setAxisX(xmin, xmax);
 			gv.setAxisY(ymin, ymax);
 			gv.setXStart(currentTime.getTimeInMillis() / 1000);
+			gv.invalidate();
+			if (position == 1) {
+				if (showLoading) {
+					loading.clearAnimation();
+					if (loading.getVisibility() != View.VISIBLE) {
+						AnimUtils.FadeIn.startAnimation(loading, 300);
+					}
+				} else {
+					if (loading.getVisibility() == View.VISIBLE) {
+						AnimUtils.FadeOut.startAnimation(loading, 300);
+					}
+				}
+			}
 			return convertView;
 		}
 		
@@ -263,7 +284,9 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 			request.setSoTimeout(23000);
 			request.setConnManagerTimeout(15000);
 			//request.asyncRequest(this, offsetFromInit);
-			pool.addRequest(request, this, offsetFromInit);
+			if (!pool.hasID(offsetFromInit)) {
+				pool.addRequest(request, this, offsetFromInit);
+			}
 			onConnectionStartOrEnd();
 		}
 
@@ -273,9 +296,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 			int pos = initPos + id;
 			if (pos < 0 || pos >= x.size()) {
 				Log.e(TAG, "never add this pos = " + pos);
-				return;
-			}
-			if (resp != null) {
+			} else if (resp != null) {
 				try {
 					JSONObject json = resp.json.getJSONObject("data");
 					JSONArray sensorList = json.getJSONArray("sensorList");
@@ -375,6 +396,11 @@ public class GraphDialog extends Dialog implements ViewSwitchListener {
 			}
 			list.setSelection(1);
 		}
+	}
+
+	@Override
+	public void onDismiss(DialogInterface dialog) {
+		pool.clearAndShutDownAll();
 	}
 
 }

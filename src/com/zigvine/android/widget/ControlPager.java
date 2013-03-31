@@ -149,6 +149,11 @@ public class ControlPager extends Pager
 			refreshData(currentGroup, false);
 		}
 	}
+	
+	@Override
+	public void setEmptyViewText(String text) {
+		((TextView) findViewById(R.id.monitor_empty_word)).setText(text);
+	}
 
 	private void refreshData(long groupid, boolean force) {
 		if (currentGroup != groupid) {
@@ -178,6 +183,7 @@ public class ControlPager extends Pager
 			request = new Request(Request.GetControl, true);
 			request.setParam("groupID", String.valueOf(groupid));
 			request.asyncRequest(this, requestId);
+			findViewById(R.id.monitor_empty_word).setVisibility(View.GONE);
 		} else {
 			refreshDataWithoutFetch(groupid);
 		}
@@ -224,6 +230,7 @@ public class ControlPager extends Pager
 			anim.setStartOffset(Loading_Disappear_Delay_Ms);
 			loader.startAnimation(anim);
 		}
+		findViewById(R.id.monitor_empty_word).setVisibility(View.VISIBLE);
 		list.stopRefresh();
 	}
 	

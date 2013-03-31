@@ -22,12 +22,14 @@ import com.zigvine.zagriculture.UIActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 public class AlarmPager extends Pager
-		implements ResponseListener, IXListViewListener {
+		implements ResponseListener, IXListViewListener, OnItemClickListener {
 
 	XListView list;
 	TextView refresh, loader;
@@ -65,6 +67,7 @@ public class AlarmPager extends Pager
 		list.setEmptyView(findViewById(R.id.monitor_empty));
 		list.setPullRefreshEnable(true);
 		list.setPullLoadEnable(false);
+		list.setOnItemClickListener(this);
 		loader = (TextView) findViewById(R.id.monitor_loading);
 		loader.setVisibility(View.GONE);
 		adapter = new MonitorAdapter(mContext);
@@ -98,6 +101,11 @@ public class AlarmPager extends Pager
 			refreshData(currentGroup, false);
 		}
 	}
+	
+	@Override
+	public void setEmptyViewText(String text) {
+		((TextView) findViewById(R.id.monitor_empty_word)).setText(text);
+	}
 
 	private void refreshData(long groupid, boolean force) {
 		if (currentGroup != groupid) {
@@ -127,6 +135,7 @@ public class AlarmPager extends Pager
 			request = new Request(Request.GetAlarm, true);
 			request.setParam("groupID", String.valueOf(groupid));
 			request.asyncRequest(this, requestId);
+			findViewById(R.id.monitor_empty_word).setVisibility(View.GONE);
 		} else {
 			refreshDataWithoutFetch(groupid);
 		}
@@ -167,6 +176,7 @@ public class AlarmPager extends Pager
 			anim.setStartOffset(Loading_Disappear_Delay_Ms);
 			loader.startAnimation(anim);
 		}
+		findViewById(R.id.monitor_empty_word).setVisibility(View.VISIBLE);
 		list.stopRefresh();
 	}
 	
@@ -216,14 +226,7 @@ public class AlarmPager extends Pager
 
 		@Override
 		public long getItemId(int position) {
-			try {
-				JSONObject json = (JSONObject) getItem(position);
-				String mac = json.getString("DeviceId");
-				return Utils.mac2long(mac);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			return 0;
+			return position;
 		}
 
 		@Override
@@ -281,6 +284,22 @@ public class AlarmPager extends Pager
 
 	@Override
 	public void onLoadMore() {
+		
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+		pos = (int) id; // very important
+		JSONObject json = (JSONObject) adapter.getItem(pos);
+		try {
+			String name = json.getString("DeviceName");
+			String deviceID = json.getString("DeviceId");
+			String quotaId = json.getString("QuotaId");
+			String quotaName = json.getString("Quota");
+			new GraphDialog(mContext, name, deviceID, quotaName, quotaId).show();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		
 	}
 }

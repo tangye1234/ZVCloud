@@ -30,6 +30,7 @@ public abstract class Pager {
 	public abstract void refreshDataWithoutFetch(long groupid);
 	public abstract void refreshCurrentGroupNow();
 	public abstract void notifyLastRefreshTime();
+	public abstract void setEmptyViewText(String text);
 
 	public View getContentView() {
 		return mView;

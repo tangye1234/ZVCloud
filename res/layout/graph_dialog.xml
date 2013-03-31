@@ -56,7 +56,8 @@
             android:id="@+id/tx1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="117dp"
             android:padding="2dp"
             android:textColor="#605f5f"
             android:textSize="13sp"
@@ -66,11 +67,22 @@
             android:id="@+id/tx2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="62dp"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="77dp"
             android:padding="2dp"
             android:textColor="#605f5f"
             android:textSize="13sp"
             android:textIsSelectable="false" />
+        
+        <TextView
+            android:id="@+id/graph_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:textColor="#605f5f"
+            android:textSize="15sp"
+            android:text="@string/loading_list"/>
 
         <View
             android:layout_width="match_parent"
