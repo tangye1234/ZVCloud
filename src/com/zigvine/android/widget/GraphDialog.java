@@ -373,6 +373,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 	}
 	
 	private void onConnectionStartOrEnd() {
+		progress.clearAnimation();
 		if (pool.getRunningCount() > 0) {
 			if (progress.getVisibility() != View.VISIBLE) {
 				refreshTime.setQueuedText(R.string.loading_data);
