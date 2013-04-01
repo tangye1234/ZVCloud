@@ -635,13 +635,14 @@ public class ViewFlow extends AdapterView<Adapter> {
 
 		ArrayList<View> recycleViews = new ArrayList<View>();
 		View recycleView;
+		View currentView = null;
 		while (!mLoadedViews.isEmpty()) {
 			recycleViews.add(recycleView = mLoadedViews.remove());
 			detachViewFromParent(recycleView);
 		}
 
 		int removePos = position;
-		View currentView = makeAndAddView(position, true,
+		currentView = makeAndAddView(position, true,
 				(recycleViews.isEmpty() ? null : recycleViews.remove(removePos)));
 		mLoadedViews.addLast(currentView);
 

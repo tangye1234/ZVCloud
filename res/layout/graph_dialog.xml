@@ -39,8 +39,6 @@
         
     </LinearLayout>
 
-    
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,6 +49,13 @@
             android:id="@+id/graph_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+        
+        <ImageView
+            android:id="@+id/cache_view"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:contentDescription="@string/graph"
+            android:visibility="gone" />
         
         <TextView
             android:id="@+id/tx1"

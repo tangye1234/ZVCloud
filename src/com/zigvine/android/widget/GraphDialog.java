@@ -27,6 +27,8 @@ import com.zigvine.zagriculture.UIActivity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.View;
@@ -165,12 +167,11 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 				y.addFirst(null);
 				yrange.addFirst(null);
 			}
-			notifyDataSetChanged();
+			//notifyDataSetChanged();
 		}
 		
 		public void next() {
 			currentTime.add(Calendar.HOUR, 6);
-			notifyDataSetChanged();
 			if (curPos < x.size() - 1) {
 				curPos++;
 			} else {
@@ -179,7 +180,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 				yrange.addLast(null);
 				curPos++;
 			}
-			notifyDataSetChanged();
+			//notifyDataSetChanged();
 		}
 
 		@Override
@@ -385,16 +386,48 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 			}
 		}
 	}
+	
+	Bitmap bitmap = null;
 
 	@Override
 	public void onSwitched(View view, int position) {
+		View v = null;
 		if (position != 1) {
 			if (position == 0) {
+				v = list.getChildAt(0).findViewById(R.id.graph_view);
+				if (bitmap != null) {
+					bitmap.recycle();
+				}
+				bitmap = Bitmap.createBitmap(v.getMeasuredWidth(), v.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+		        v.draw(new Canvas(bitmap));
+				((ImageView) mWindow.findViewById(R.id.cache_view)).setImageBitmap(bitmap);
+				mWindow.findViewById(R.id.cache_view).setVisibility(View.VISIBLE);
+				//v.setVisibility(View.INVISIBLE);
 				adapter.prev();
 			} else {
+				v = list.getChildAt(2).findViewById(R.id.graph_view);
+				if (bitmap != null) {
+					bitmap.recycle();
+				}
+				bitmap = Bitmap.createBitmap(v.getMeasuredWidth(), v.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+		        v.draw(new Canvas(bitmap));
+				((ImageView) mWindow.findViewById(R.id.cache_view)).setImageBitmap(bitmap);
+				mWindow.findViewById(R.id.cache_view).setVisibility(View.VISIBLE);
+				//v.setVisibility(View.INVISIBLE);
 				adapter.next();
 			}
-			list.setSelection(1);
+			
+			final View copy = v;
+			//mWindow.findViewById(R.id.cache_view).setVisibility(View.GONE);
+			mWindow.findViewById(R.id.cache_view).post(new Runnable() {
+				public void run() {
+					copy.setVisibility(View.INVISIBLE);
+					list.setSelection(1);
+					adapter.notifyDataSetChanged();
+					copy.setVisibility(View.VISIBLE);
+					mWindow.findViewById(R.id.cache_view).setVisibility(View.GONE);
+				}
+			});
 		}
 	}
 
