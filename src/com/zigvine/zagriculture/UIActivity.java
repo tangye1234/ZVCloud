@@ -9,8 +9,15 @@ import org.json.JSONObject;
 import com.slidingmenu.lib.SlidingMenu;
 import com.zigvine.android.widget.Pager;
 
+import android.annotation.TargetApi;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -18,6 +25,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +34,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 	public UITool<T> UI;
 	protected String TAG;
 	protected final static String BTAG = "UIActivity";
+	private View mOverflowMenuButton;
 	
 	public static class UITool<S extends UIActivity<?>> {
 		
@@ -65,6 +74,41 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 			toast = Toast.makeText(activity, err, Toast.LENGTH_SHORT);
 			toast.show();
 		}
+		
+		/**
+		 * get the shared preference
+		 * @param prefix
+		 * @param user
+		 * @return shared preference object
+		 */
+		public SharedPreferences getSharedPrefsForUsers(String prefix, String user) {
+			SharedPreferences sp = activity.getSharedPreferences(prefix + "_" + user, MODE_PRIVATE);
+			return sp;
+		}
+		
+		/**
+		 * setup the top-right options menu button
+		 */
+		public void setupMoreMenu() {
+			if (MainApp.getAPILevel() >= 11) {
+				if (MainApp.getAPILevel() >= 14) {
+					if (!activity.hasPermanentMenuKey()) {
+						activity.createFakeMenu();
+			        }
+				} else {
+					activity.createFakeMenu();
+				}
+	        }
+		}
+		
+		/**
+		 * start a url site
+		 * @param url the link of the website
+		 */
+		public void startWebSite(String url) {
+	    	Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+	    	activity.startActivity(intent);
+	    }
 		
 		/**
 		 * Make a sliding menu in the activity
@@ -162,6 +206,80 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 	public void onRefresh(Pager page) {
 		log("no page refresh needed");
 	}
+	
+	@TargetApi(14)
+	private boolean hasPermanentMenuKey() {
+		return ViewConfiguration.get(this).hasPermanentMenuKey();
+	}
+	
+	private void createFakeMenu() {
+        mOverflowMenuButton = findViewById(R.id.more_menu);
+        if (mOverflowMenuButton != null) {
+            mOverflowMenuButton.setVisibility(View.VISIBLE);
+            mOverflowMenuButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					showPopupMenu();
+				}
+			});
+        }
+    }
+
+	@TargetApi(11)
+	private void showPopupMenu() {
+        final PopupMenu popupMenu = new PopupMenu(this, mOverflowMenuButton);
+        final Menu menu = popupMenu.getMenu();
+        // popupMenu.inflate(R.menu.main_menu);
+        popupMenu.getMenuInflater().inflate(R.menu.main_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				return onOptionsItemSelected(item);
+			}
+        });
+        onPrepareOptionsMenu(menu);
+        if(popupMenu != null) {
+        	popupMenu.show();
+        }
+    }
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        //menu.findItem(R.id.menu_logoff).setVisible(showLogOff);
+        //menu.findItem(R.id.menu_aboutus).setEnabled(!(this instanceof AboutUsActivity));
+        //menu.findItem(R.id.menu_guide).setEnabled(!(this instanceof GuideActivity));
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	Intent intent;
+        switch (item.getItemId()) {
+            case R.id.menu_logoff:
+            	MainApp.quitSession();
+    			finish();
+                return true;
+            case R.id.menu_guide:
+            	//intent = new Intent(this, GuideActivity.class);
+            	//startActivity(intent);
+            	return true;
+            case R.id.menu_about:
+                //showAboutDialog();
+                return true;
+            case R.id.menu_license:
+            	UI.startWebSite("http://www.zigvine.com");
+            	return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 	
 	/*package*/ void log(String s) {
 		Log.d(TAG, s);

@@ -49,8 +49,8 @@ public class Request {
 		}
 	}
 	
-	
-	public static final String Verify = "/verify";
+	public static final String MobileBound = "/mobilebound";
+	public static final String SafeVerify = "/safeverify";
 	public static final String GetGroupList = "/getgrouplist";
 	public static final String SnapShotData = "/snapshotdata";
 	public static final String GetAlarm = "/getalarm";

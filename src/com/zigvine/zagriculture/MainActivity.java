@@ -13,6 +13,7 @@ import com.zigvine.android.widget.MonitorPager;
 import com.zigvine.android.widget.Pager;
 import com.zigvine.zagriculture.MainApp.AlarmReceiverListener;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -29,7 +30,7 @@ public class MainActivity extends UIActivity<MainActivity>
 	SimpleFlowIndicator indicator;
 	TextView monitor, control, /*graph, */alarm, title, alarm_count;
 	TextView[] views;
-	View moreMenu, refreshMenu, titleMain;
+	View refreshMenu, titleMain;
 	int currentPos;
 	long currentGroup;
 	
@@ -41,6 +42,7 @@ public class MainActivity extends UIActivity<MainActivity>
 	String currentGroupName, currentGroupDesc;
 	
 	public static final String POSITION_EXTRA = "com.zigvine.zagriculture.jump_position";
+	public static final String NOTICE_EXTRA = "com.zigvine.zagriculture.notice"; 
 	
 	final static int[] tabsDrawableUnselectedRes;
 	final static int[] tabsDrawableSelectedRes;
@@ -71,6 +73,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		pages[1] = mControlPager;
 		pages[2] = mAlarmPager;
 		
+		UI.setupMoreMenu();
 		UI.createStandardSlidingMenu();
 		
 		title = (TextView) findViewById(R.id.title_text);
@@ -82,9 +85,6 @@ public class MainActivity extends UIActivity<MainActivity>
 		refreshMenu = findViewById(R.id.refresh_menu);
 		refreshMenu.setVisibility(View.VISIBLE);
 		refreshMenu.setOnClickListener(this);
-		
-		moreMenu = findViewById(R.id.more_menu);
-		moreMenu.setOnClickListener(this);
 		
 		//currentPos = 0;
 		currentGroup = -1;
@@ -117,8 +117,28 @@ public class MainActivity extends UIActivity<MainActivity>
 		int pos = intent.getIntExtra(POSITION_EXTRA, 0);
 		mViewFlow.setAdapter(adapter, pos); // must init after all
 		refreshOnStart = true;
+		
+		showNoticeIfNeeded(intent);
+		
 	}
 	
+	private void showNoticeIfNeeded(Intent intent) {
+		String[] arr = intent.getStringArrayExtra(NOTICE_EXTRA);
+		if (arr != null && arr.length == 2) {
+			String title = arr[0];
+			String content = arr[1];
+			if (content != null && content.length() > 0) {
+				new AlertDialog.Builder(this)
+				.setTitle(title)
+				.setMessage(content)
+				.setIcon(R.drawable.ic_dialog_info)
+				.setPositiveButton(android.R.string.ok, null)
+				.show();
+			}
+		}
+		
+	}
+
 	@Override
 	protected void onNewIntent(Intent intent) {
 		int pos = intent.getIntExtra(POSITION_EXTRA, 0);
@@ -181,9 +201,6 @@ public class MainActivity extends UIActivity<MainActivity>
 			if (pages[currentPos] != null) {
 				pages[currentPos].refreshCurrentGroupNow();
 			}
-			break;
-		case R.id.more_menu:
-			//TODO
 			break;
 		}
 	}
@@ -263,8 +280,8 @@ public class MainActivity extends UIActivity<MainActivity>
 		Drawable unSelectDrawable = getResources().getDrawable(tabsDrawableUnselectedRes[currentPos]);
 		selectTabs.setCompoundDrawablesWithIntrinsicBounds(null, selectDrawable, null, null);
 		unSelectTabs.setCompoundDrawablesWithIntrinsicBounds(null, unSelectDrawable, null, null);
-		selectTabs.setTextColor(0xffffffff);
-		unSelectTabs.setTextColor(0x99ffffff);
+		selectTabs.setTextColor(0xffff9000);
+		unSelectTabs.setTextColor(0xffffffff);
 		currentPos = position;
 		if (currentGroup >= 0 && pages[currentPos] != null) {
 			pages[currentPos].refreshData(currentGroup);

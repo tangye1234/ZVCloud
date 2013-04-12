@@ -369,11 +369,12 @@ public class ControlPager extends Pager
 						} else {
 							View v = new View(mContext);
 							v.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
-							v.setBackgroundColor(0xffaaaaaa);
+							v.setBackgroundColor(0xff3c3c3c);
 							ch.addView(v);
 						}
 						tv.setPadding(40, 10, 40, 10);
 						tv.setTextSize(20);
+						tv.setTextColor(0xffc5c5c5);
 						tv.setText(name);
 						tv.setBackgroundResource(R.drawable.title_btn);
 						tv.setOnClickListener(this);

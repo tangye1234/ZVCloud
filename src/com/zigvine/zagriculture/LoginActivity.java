@@ -9,11 +9,17 @@ import com.zigvine.android.anim.QueuedTextView;
 import com.zigvine.android.http.Request;
 import com.zigvine.android.http.Request.Resp;
 import com.zigvine.android.http.Request.ResponseListener;
+import com.zigvine.android.utils.JSONObjectExt;
+import com.zigvine.android.utils.MD5;
 import com.zigvine.android.utils.Utils;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -22,12 +28,14 @@ import android.widget.ProgressBar;
 public class LoginActivity extends UIActivity<LoginActivity>
 		implements ResponseListener {
 
-	View logo, loginPan, loginBtn, loginInput, loginProgress;
+	View logo, loginPan, loginBtn, loginInput, loginProgress, toolbar;
 	ProgressBar progressBar;
-	EditText email, password;
+	EditText user, password;
 	QueuedTextView load;
 	Handler handler;
 	Request request;
+	String mNoticeTitle;
+	String mNoticeContent;
 	
 	String mUser;
 	JSONArray mGroup;
@@ -35,6 +43,9 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	private static final int RECOVERY = -1;
 	private static final int VERIFY_ID = 0;
 	private static final int GET_GROUP_LIST_ID = 1;
+	
+	private static final String CERTIFICATE = "certificate";
+	private static final String KEY_CERT = "Cert";
 	
 	private static final boolean isPreAccountSet = BuildConfig.DEBUG;
 
@@ -49,13 +60,16 @@ public class LoginActivity extends UIActivity<LoginActivity>
 			return;
 		}
 		
+		mNoticeTitle = "";
+		mNoticeContent = "";
+		
 		setContentView(R.layout.activity_login);
 		
-		email = (EditText) findViewById(R.id.login_user);
+		user = (EditText) findViewById(R.id.login_user);
 		password = (EditText) findViewById(R.id.login_password);
 		
 		if (isPreAccountSet) {
-			email.setText("zigvine");
+			user.setText("zigvine");
 			password.setText("zigvine123");
 		}
 		
@@ -66,6 +80,8 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		loginProgress = findViewById(R.id.login_progress);
 		load = (QueuedTextView) findViewById(R.id.loading_text);
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+		toolbar = findViewById(R.id.login_toolbar);
+		toolbar.setVisibility(View.INVISIBLE);
 		
 		Runnable showLogin = new Runnable() {
 			public void run() {
@@ -82,7 +98,9 @@ public class LoginActivity extends UIActivity<LoginActivity>
 						loginBtn.requestLayout();
 					}
 					@Override
-					public void onAnimationEnd() {}
+					public void onAnimationEnd() {
+						AnimUtils.SlideInUp.startAnimation(toolbar, 500);
+					}
 				};
 				new AnimUtils.CustomAnimation(500, lp.bottomMargin, -Utils.dp2px(UI.getActivity(), 30), Call_back).startAnimation();
 				
@@ -98,7 +116,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	public void onClick(View view) {
 		switch(view.getId()) {
 		case R.id.btn_signin:
-			startSign();
+			prepareLoginInfo();
 			break;
 		}
 	}
@@ -113,18 +131,99 @@ public class LoginActivity extends UIActivity<LoginActivity>
 			onResp(RECOVERY, null);
 		}
 	}
-
-	private void startSign() {
-		log("__startSign__");
-		mUser = email.getText().toString();
+	
+	private void prepareLoginInfo() {
+		mUser = user.getText().toString();
+		String pswd = password.getText().toString();
 		if (mUser.length() == 0) {
-			email.setError(getString(R.string.e1));
+			user.setError(getString(R.string.e1));
 			return;
 		}
-		if (password.getText().length() == 0) {
+		if (pswd.length() == 0) {
 			password.setError(getString(R.string.e2));
 			return;
 		}
+		SharedPreferences sp = UI.getSharedPrefsForUsers(CERTIFICATE, mUser);
+		String cert = sp.getString(KEY_CERT, null);
+		final String mPass = pswd;
+		if (cert != null) {
+			startSign(mUser, mPass, cert);
+		} else {
+			final View v = View.inflate(this, R.layout.input_dialog_view, null);
+			final EditText phoneText = (EditText) v.findViewById(R.id.dialog_input);
+			phoneText.setHint(R.string.hint_mobile);
+			TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+			if (tm != null) {
+				String p = tm.getLine1Number();
+				if (p != null) {
+					phoneText.setText(p);
+				}
+			}
+			new AlertDialog.Builder(this)
+			.setTitle("首次登录需要绑定手机")
+			.setIcon(R.drawable.ic_dialog_info)
+			.setView(v)
+			.setNegativeButton(android.R.string.cancel, null)
+			.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					String phone = phoneText.getText().toString();
+					if (phone.length() == 0 || phone.length() < 11) {
+						// TODO
+					} else {
+						// phone = phone.substring(phone.length() - 11);
+						startBind(mUser, mPass, phone);
+					}
+				}
+			}).show();
+		}
+	}
+	
+	private void startBind(final String user, final String password, final String mobile) {
+		log("__startBind__");
+		String time = Utils.DATETIME.format(new java.util.Date());
+		
+		loginBtn.setEnabled(false);
+		UI.hideInputMethod();
+		AnimUtils.FadeOut.startAnimation(loginInput, 500);
+		AnimUtils.FadeIn.startAnimation(loginProgress, 500);
+		
+		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+		String did = null;
+		if (tm != null) {
+			did = tm.getDeviceId();
+		}
+		if (did == null) {
+			did = tm.getSubscriberId();
+		}
+		if (did == null) {
+			did = "xxxx";
+		}
+		//UI.toast(did);
+		
+		JSONObject requestJson = new JSONObject();
+		try {
+			requestJson.put("UserId", user);
+			requestJson.put("Password", password/*MD5.getMD5ofStr(user + password + time)*/);
+			requestJson.put("Mobile", mobile);
+			requestJson.put("IMEI", did);
+			requestJson.put("Timestamp", time);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		load.setText(R.string.signin_loading);
+		request = new Request("/verify"/*Request.MobileBound*/);
+		request.setDebug(true);
+		request.setJSONEntity(requestJson);
+		request.asyncRequest(this, VERIFY_ID);
+		
+	}
+
+	private void startSign(final String user, final String password, final String cert) {
+		log("__startSign__");
+		String time = Utils.DATETIME.format(new java.util.Date());
 		
 		loginBtn.setEnabled(false);
 		UI.hideInputMethod();
@@ -133,14 +232,16 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		
 		JSONObject requestJson = new JSONObject();
 		try {
-			requestJson.put("UserId", mUser);
-			requestJson.put("Password", password.getText().toString());
+			requestJson.put("UserId", user);
+			requestJson.put("Password", MD5.getMD5ofStr(user + password + time));
+			requestJson.put("Certificate", MD5.getMD5ofStr(cert + password + time));
+			requestJson.put("Timestamp", time);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		
 		load.setText(R.string.signin_loading);
-		request = new Request(Request.Verify);
+		request = new Request(Request.SafeVerify);
 		request.setJSONEntity(requestJson);
 		request.asyncRequest(this, VERIFY_ID);
 		
@@ -155,6 +256,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 			if (resp.success) {
 				load.setQueuedText(R.string.loading_info);
 				recovery = false;
+				process(resp);
 				request = new Request(Request.GetGroupList, true);
 				request.asyncRequest(this, GET_GROUP_LIST_ID);
 			} else {
@@ -207,6 +309,19 @@ public class LoginActivity extends UIActivity<LoginActivity>
 			waitForFinish();
 		}
 	};
+	
+	private void process(Resp resp) {
+		if (resp != null) {
+			JSONObjectExt json = new JSONObjectExt(resp.json);
+			mNoticeTitle = json.getString("NoticeTitle", "");
+			mNoticeContent = json.getString("NoticeContent", "");
+			String cert = json.getString("Certificate", null);
+			if (cert != null) {
+				SharedPreferences sp = UI.getSharedPrefsForUsers(CERTIFICATE, mUser);
+				sp.edit().putString(KEY_CERT, cert).commit();
+			}
+		}
+	}
 
 	private void waitForFinish() {
 		if (!load.isQueuedFinished()) {
@@ -224,6 +339,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 			// start activity
 			MainApp.initSession(mUser, mGroup);
 			Intent intent = new Intent(UI.getActivity(), MainActivity.class);
+			intent.putExtra(MainActivity.NOTICE_EXTRA, new String[] {mNoticeTitle, mNoticeContent});
 			startActivity(intent);
 			finish();
 		}

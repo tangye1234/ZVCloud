@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/white_bg_top"
+    android:background="@drawable/pageritem_bg_top"
     android:orientation="vertical" >
 
     <LinearLayout
@@ -87,7 +87,7 @@
             android:layout_gravity="center"
             android:padding="5dp"
             android:text="@string/hello_world"
-            android:textColor="#fdb222"
+            android:textColor="#edb222"
             android:textSize="25sp" />
     </LinearLayout>
 
@@ -95,7 +95,7 @@
         android:id="@+id/more_control"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@drawable/menu_bg_full" >
+        android:background="@drawable/menu_bg_dark_full" >
 
         <LinearLayout
             android:id="@+id/control_items"

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_settings"
+        android:title="@string/menu_settings"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:showAsAction="never" />
+    <item android:id="@+id/menu_about"
+        android:title="@string/menu_about"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:showAsAction="never" />
+    <item android:id="@+id/menu_license"
+        android:title="@string/menu_license"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:showAsAction="never" />
+    <item android:id="@+id/menu_guide"
+        android:title="@string/menu_guide"
+        android:icon="@android:drawable/ic_menu_help"
+        android:showAsAction="never" />
+    <item android:id="@+id/menu_logoff"
+        android:title="@string/menu_logoff"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
+        android:showAsAction="never" />
+</menu>

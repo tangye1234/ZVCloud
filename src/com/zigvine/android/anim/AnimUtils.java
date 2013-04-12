@@ -1,6 +1,8 @@
 
 package com.zigvine.android.anim;
 
+import com.zigvine.zagriculture.R;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -159,6 +161,22 @@ public class AnimUtils {
 			view.startAnimation(anim);
 		}
 	}
+	
+	public static class SlideInUp {
+		
+		public static Animation loadAnimation(Context context, long duration) {
+			Animation anim = AnimationUtils.loadAnimation(context, R.anim.slide_in_child_bottom);
+			anim.setDuration(duration);
+			return anim;
+		}
+		
+		public static void startAnimation(View view, long duration) {
+			Animation anim = loadAnimation(view.getContext(), duration);
+			anim.setAnimationListener(loadStartListener(view, View.VISIBLE));
+			view.startAnimation(anim);
+		}
+		
+	}
 
 	public static class CustomAnimation implements Runnable {
 		long duration;
@@ -228,7 +246,8 @@ public class AnimUtils {
 				lastStep = step;
 			} else if (post) {
 				handler.postDelayed(this, 5);
-			} else {
+			}
+			if (!post) {
 				callback.onAnimationEnd();
 			}
 		}

@@ -27,6 +27,10 @@
             android:padding="20dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#eeefff"
+            android:shadowColor="#5c5c5c"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="3"
             android:visibility="gone" />
     </FrameLayout>
 

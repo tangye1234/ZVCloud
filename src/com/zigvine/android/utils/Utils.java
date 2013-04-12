@@ -96,4 +96,5 @@ public class Utils {
 	
 	public static final SimpleDateFormat DATETIME = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 	public static final SimpleDateFormat DATE = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+
 }

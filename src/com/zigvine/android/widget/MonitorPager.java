@@ -265,8 +265,8 @@ public class MonitorPager extends Pager
 						qvalue.setShadowLayer(20, 0, 0, 0xffff0000);
 						alarm.setVisibility(View.VISIBLE);
 					} else {
-						qvalue.setTextColor(0xff7fe101);//0xfffdb222
-						qvalue.setShadowLayer(20, 0, 0, 0xff7fe101);
+						qvalue.setTextColor(0xff00bb00);//0xfffdb222
+						qvalue.setShadowLayer(20, 0, 0, 0xff00bb00);//0xff7fe101
 						alarm.setVisibility(View.GONE);
 					}
 				}
