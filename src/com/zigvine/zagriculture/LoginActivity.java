@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -31,6 +32,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	View logo, loginPan, loginBtn, loginInput, loginProgress, toolbar;
 	ProgressBar progressBar;
 	EditText user, password;
+	CheckBox autoLogin;
 	QueuedTextView load;
 	Handler handler;
 	Request request;
@@ -45,9 +47,11 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	private static final int GET_GROUP_LIST_ID = 1;
 	
 	private static final String CERTIFICATE = "certificate";
+	private static final String LOGININFO = "logininfo";
 	private static final String KEY_CERT = "Cert";
+	private static final boolean NORMAL_LOGIN = false;
 	
-	private static final boolean isPreAccountSet = BuildConfig.DEBUG;
+	private static final boolean isPreAccountSet = false;//BuildConfig.DEBUG;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -67,6 +71,9 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		
 		user = (EditText) findViewById(R.id.login_user);
 		password = (EditText) findViewById(R.id.login_password);
+		autoLogin = (CheckBox) findViewById(R.id.auto_login);
+		
+		readLoginInfo();
 		
 		if (isPreAccountSet) {
 			user.setText("zigvine");
@@ -205,7 +212,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		JSONObject requestJson = new JSONObject();
 		try {
 			requestJson.put("UserId", user);
-			requestJson.put("Password", password/*MD5.getMD5ofStr(user + password + time)*/);
+			requestJson.put("Password", NORMAL_LOGIN ? password : MD5.getMD5ofStr(user + password + time));
 			requestJson.put("Mobile", mobile);
 			requestJson.put("IMEI", did);
 			requestJson.put("Timestamp", time);
@@ -214,7 +221,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		}
 		
 		load.setText(R.string.signin_loading);
-		request = new Request("/verify"/*Request.MobileBound*/);
+		request = new Request(NORMAL_LOGIN ? "/verify" : Request.MobileBound);
 		request.setDebug(true);
 		request.setJSONEntity(requestJson);
 		request.asyncRequest(this, VERIFY_ID);
@@ -336,12 +343,42 @@ public class LoginActivity extends UIActivity<LoginActivity>
 			load.setTextColor(0xff008800);
 			load.setQueuedText("登录成功");
 			loginProgress.setVisibility(View.VISIBLE);
+			// save login info depends on user decision
+			if (autoLogin.isChecked()) {
+				saveLoginInfo();
+			} else {
+				deleteLoginInfo();
+			}
 			// start activity
 			MainApp.initSession(mUser, mGroup);
 			Intent intent = new Intent(UI.getActivity(), MainActivity.class);
 			intent.putExtra(MainActivity.NOTICE_EXTRA, new String[] {mNoticeTitle, mNoticeContent});
 			startActivity(intent);
 			finish();
+		}
+	}
+	
+	private void saveLoginInfo() {
+		SharedPreferences sp = UI.getSharedPrefsForUsers(LOGININFO, "currentUser");
+		sp.edit().putString("user", user.getText().toString())
+		.putString("pass", password.getText().toString())
+		.commit();
+	}
+	
+	private void deleteLoginInfo() {
+		SharedPreferences sp = UI.getSharedPrefsForUsers(LOGININFO, "currentUser");
+		sp.edit().clear().commit();
+	}
+	
+	private void readLoginInfo() {
+		SharedPreferences sp = UI.getSharedPrefsForUsers(LOGININFO, "currentUser");
+		String u = sp.getString("user", "");
+		if (u.length() > 0) {
+			user.setText(u);
+			password.setText(sp.getString("pass", ""));
+			autoLogin.setChecked(true);
+		} else {
+			autoLogin.setChecked(false);
 		}
 	}
 

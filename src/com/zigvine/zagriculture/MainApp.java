@@ -9,19 +9,31 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.zigvine.android.http.HttpManager;
+import com.zigvine.android.http.Request;
 
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.util.Log;
 
 public class MainApp extends Application {
 	
+	private static final String TAG = "ZVMainApp";
 	private static String version;
 	private static int apilevel;
+	private static MainApp instance = null;
+	
+	public static final int UNCHECKED = -1;
+    public static final int CHECKED_NO_NEED = 0;
+    public static final int CHECKED_NEED_UPGRADE = 1;
+    
+    private static int checkstate = UNCHECKED; 
+    private Thread updatethread = null;
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		instance = this;
 		HttpManager.createMessageManager(this);
 		apilevel = android.os.Build.VERSION.SDK_INT;
 		version = "unkown";
@@ -32,7 +44,36 @@ public class MainApp extends Application {
 			e.printStackTrace();
 			// TODO pend another thread to get version and agent
 		}
+		startCheck(null, false); // 自动检测版本更新
 	}
+	
+	public static interface UpdateCheckListener {
+		public void onCheckedOver(int result);
+	}
+	
+	/**
+     * 检测版本信息
+     */
+    public void startCheck(final UpdateCheckListener l, boolean force) {
+        if(force || updatethread == null && checkstate == UNCHECKED) {
+            updatethread = new Thread() {
+                public void run() {
+                    UpdateModel um = new UpdateModel(MainApp.this);
+                    checkstate = um.update(getPackageName());
+                    //for test
+                    //checkstate = um.update("com.cnepay.android.pos");
+                    Log.v(TAG, "checking result: " + String.valueOf(checkstate));
+                    updatethread = null;
+                    if (l != null) {
+                    	l.onCheckedOver(checkstate);
+                    }
+                }
+            };
+            updatethread.start();
+        } else {
+            Log.v(TAG, "No need to start thread, checkstate: " + String.valueOf(checkstate));
+        }
+    }
 
 	@Override
 	public void onLowMemory() {
@@ -44,6 +85,7 @@ public class MainApp extends Application {
 	public void onTerminate() {
 		super.onTerminate();
 		HttpManager.destroyMessageManager();
+		instance = null;
 	}
 	
 	public static String getVersion() {
@@ -52,6 +94,10 @@ public class MainApp extends Application {
 	
 	public static int getAPILevel() {
 		return apilevel;
+	}
+	
+	public static MainApp getInstance() {
+		return instance;
 	}
 	
 	
@@ -71,6 +117,8 @@ public class MainApp extends Application {
 	public static void quitSession() {
 		if (mSignIn) {
 			mSignIn = false;
+			Request request = new Request(Request.LogOff, true);
+			request.asyncRequest(null, 0);
 		}
 		if (mAlarmGroup != null) {
 			mAlarmGroup.clear();

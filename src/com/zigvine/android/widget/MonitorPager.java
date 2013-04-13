@@ -75,6 +75,12 @@ public class MonitorPager extends Pager
 		refresh = (TextView) findViewById(R.id.monitor_refresh);
 		refresh.setVisibility(View.GONE);
 		list.setXListViewListener(this);
+		findViewById(R.id.monitor_empty).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				refreshCurrentGroupNow();
+			}
+		});
 	}
 	
 	@Override

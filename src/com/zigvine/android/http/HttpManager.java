@@ -102,8 +102,11 @@ public class HttpManager {
 	
 	public HttpResponse nativeExecute(HttpUriRequest request) throws
 			IOException, ClientProtocolException {
+		if (DBG) {
+			Log.i(TAG, "native http request: " + request.getURI().toString());
+		}
 		if (httpClient != null) {
-			return httpClient.execute(request);
+			return httpClient.execute(request, httpContext);
 		}
 		return null;
 	}

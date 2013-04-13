@@ -57,6 +57,7 @@ public class Request {
 	public static final String GetControl = "/controldata";
 	public static final String SendCommand = "/sendcommand";
 	public static final String DataChart = "/datachart";
+	public static final String LogOff = "/logoff";
 	
 	private HttpManager httpManager;
 	private HttpRequestBase httpRequest;
@@ -335,14 +336,18 @@ public class Request {
 					final Resp data = resp;
 					handler.post(new Runnable() {
 						public void run() {
-							rl.onResp(requestId, data, obj);
+							if (rl != null) {
+								rl.onResp(requestId, data, obj);
+							}
 						}
 					});
 				} else if (error != null) {
 					final String data = error;
 					handler.post(new Runnable() {
 						public void run() {
-							rl.onErr(requestId, data, httpStatusCode, obj);
+							if (rl != null) {
+								rl.onErr(requestId, data, httpStatusCode, obj);
+							}
 						}
 					});
 				}

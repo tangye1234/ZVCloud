@@ -95,7 +95,7 @@
         android:id="@+id/more_control"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@drawable/menu_bg_dark_full" >
+        android:background="@drawable/bg_line_repeat" >
 
         <LinearLayout
             android:id="@+id/control_items"

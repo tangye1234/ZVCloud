@@ -8,8 +8,10 @@ import org.json.JSONObject;
 
 import com.slidingmenu.lib.SlidingMenu;
 import com.zigvine.android.widget.Pager;
+import com.zigvine.zagriculture.MainApp.UpdateCheckListener;
 
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -67,12 +69,18 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		/**
 		 * To toast a prompt for short indications
 		 */
-		public void toast(CharSequence err) {
-			if (toast != null) {
-				toast.cancel();
-			}
-			toast = Toast.makeText(activity, err, Toast.LENGTH_SHORT);
-			toast.show();
+		public void toast(final CharSequence err) {
+			activity.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (toast != null) {
+						toast.cancel();
+					}
+					toast = Toast.makeText(activity, err, Toast.LENGTH_SHORT);
+					toast.show();
+				}
+			});
+			
 		}
 		
 		/**
@@ -182,6 +190,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 	
 	@SuppressWarnings("unchecked")
 	public UIActivity() {
+		super();
 		UI = new UITool<T>((T)this);
 		TAG = getClass().getSimpleName();
 	}
@@ -256,13 +265,18 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
         //menu.findItem(R.id.menu_logoff).setVisible(showLogOff);
         //menu.findItem(R.id.menu_aboutus).setEnabled(!(this instanceof AboutUsActivity));
         //menu.findItem(R.id.menu_guide).setEnabled(!(this instanceof GuideActivity));
+        menu.findItem(R.id.menu_settings).setEnabled(false);
         return true;
     }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-    	Intent intent;
+    	//Intent intent;
         switch (item.getItemId()) {
+        	case R.id.menu_settings:
+        		//intent = new Intent(this, SettingsActivity.class);
+        		//startActivity(intent);
+        		return true;
             case R.id.menu_logoff:
             	MainApp.quitSession();
     			finish();
@@ -277,6 +291,22 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
             case R.id.menu_license:
             	UI.startWebSite("http://www.zigvine.com");
             	return true;
+            case R.id.menu_update:
+            	final ProgressDialog pd = new ProgressDialog(this);
+            	pd.setMessage("正在检查更新");
+            	pd.setCanceledOnTouchOutside(false);
+            	pd.show();
+            	MainApp.getInstance().startCheck(new UpdateCheckListener() {
+					@Override
+					public void onCheckedOver(int result) {
+						pd.dismiss();
+						if (result == MainApp.CHECKED_NO_NEED) {
+							UI.toast("您已经使用的是最新版本");
+						} else if (result == MainApp.UNCHECKED) {
+							UI.toast("更新检测失败，请检查网络");
+						}
+					}
+            	}, true);
         }
         return super.onOptionsItemSelected(item);
     }

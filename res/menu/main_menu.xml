@@ -16,6 +16,8 @@
         android:title="@string/menu_guide"
         android:icon="@android:drawable/ic_menu_help"
         android:showAsAction="never" />
+    <item android:id="@+id/menu_update"
+        android:title="@string/menu_update" />
     <item android:id="@+id/menu_logoff"
         android:title="@string/menu_logoff"
         android:icon="@android:drawable/ic_menu_close_clear_cancel"
