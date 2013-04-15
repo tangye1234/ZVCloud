@@ -64,7 +64,9 @@ public class MainActivity extends UIActivity<MainActivity>
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		UI.setContentView(R.layout.main_viewflow);
+		UI.setFooterView();
+		UI.setMainBackground(R.drawable.main_bg_blur);
 		
 		mMonitorPager = new MonitorPager(this);
 		mControlPager = new ControlPager(this);
@@ -73,7 +75,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		pages[1] = mControlPager;
 		pages[2] = mAlarmPager;
 		
-		UI.setupMoreMenu();
+		UI.setupMoreMenu(null);
 		UI.createStandardSlidingMenu();
 		
 		title = (TextView) findViewById(R.id.title_text);

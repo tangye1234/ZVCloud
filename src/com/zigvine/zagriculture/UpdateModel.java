@@ -25,7 +25,7 @@ import android.util.Log;
 public class UpdateModel {
 
 	private static final String TAG = "UpdateModel";
-	private static final String DEFAULT_URL = Request.URL + "/version/ws2_version.txt";
+	private static final String DEFAULT_URL = Request.HOST + "/update/update.txt";
 	private Context context;
 	
 	public static final String UPDATE = "update_infomation";

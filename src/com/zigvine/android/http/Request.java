@@ -40,14 +40,15 @@ public class Request {
 	
 	public static final boolean GLOBAL_DBG = false; /* FIXME set to false to avoid info leaks */
 	public static final String TAG = Request.class.getSimpleName();
-	public static final String URL;
+	public static final String HOST;
 	static {
 		if (GLOBAL_DBG) {
-			URL = "http://218.246.112.92/dservice";
+			HOST = "http://218.246.112.92";
 		} else {
-			URL = "http://218.246.112.92/dservice";
+			HOST = "http://218.246.112.92";
 		}
 	}
+	public static final String URL = HOST + "/dservice";
 	
 	public static final String MobileBound = "/mobilebound";
 	public static final String SafeVerify = "/safeverify";

@@ -26,6 +26,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -43,10 +44,13 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		private S activity;
 		private Toast toast;
 		private SlidingMenu menu;
+		private ViewGroup mContentView;
 		private ListView list;
+		private boolean useCustomContentView;
 		
 		public UITool(S activity) {
 			this.activity = activity;
+			useCustomContentView = false;
 		}
 		
 		/**
@@ -97,17 +101,48 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		/**
 		 * setup the top-right options menu button
 		 */
-		public void setupMoreMenu() {
+		public void setupMoreMenu(View v) {
 			if (MainApp.getAPILevel() >= 11) {
 				if (MainApp.getAPILevel() >= 14) {
 					if (!activity.hasPermanentMenuKey()) {
-						activity.createFakeMenu();
+						activity.createFakeMenu(v);
 			        }
 				} else {
-					activity.createFakeMenu();
+					activity.createFakeMenu(v);
 				}
 	        }
 		}
+		
+		public void setContentView(int layoutResID) {
+			useCustomContentView = true;
+			activity.setContentView(R.layout.activity_main);
+			mContentView = (ViewGroup) activity.findViewById(R.id.main_content);
+			View.inflate(activity, layoutResID, mContentView);
+		}
+		
+		/**
+		 * setup the footer view
+		 */
+		public void setFooterView() {
+			checkCustomContentView();
+			activity.findViewById(R.id.custom_footer).setVisibility(View.VISIBLE);
+			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mContentView.getLayoutParams();
+			int b = (int) activity.getResources().getDimension(R.dimen.footer_height);
+			lp.bottomMargin = b;
+			mContentView.setLayoutParams(lp);
+			
+		}
+		
+		/**
+		 * set the main content view's background resource
+		 * @param resid the resource id of the background
+		 */
+		public void setMainBackground(int resid) {
+			checkCustomContentView();
+			mContentView.setBackgroundResource(resid);
+		}
+		
+		//public void setMainBackground()
 		
 		/**
 		 * start a url site
@@ -186,6 +221,12 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 				menu.toggle();
 			}
 		}
+		
+		private void checkCustomContentView() {
+			if (!useCustomContentView) {
+				throw new IllegalStateException("the custom view must be under UI.setContentView");
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -221,8 +262,12 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		return ViewConfiguration.get(this).hasPermanentMenuKey();
 	}
 	
-	private void createFakeMenu() {
-        mOverflowMenuButton = findViewById(R.id.more_menu);
+	private void createFakeMenu(View v) {
+		if (v == null) {
+			mOverflowMenuButton = findViewById(R.id.more_menu);
+		} else {
+			mOverflowMenuButton = v;
+		}
         if (mOverflowMenuButton != null) {
             mOverflowMenuButton.setVisibility(View.VISIBLE);
             mOverflowMenuButton.setOnClickListener(new View.OnClickListener() {
@@ -262,9 +307,9 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        //menu.findItem(R.id.menu_logoff).setVisible(showLogOff);
-        //menu.findItem(R.id.menu_aboutus).setEnabled(!(this instanceof AboutUsActivity));
-        //menu.findItem(R.id.menu_guide).setEnabled(!(this instanceof GuideActivity));
+        menu.findItem(R.id.menu_logoff).setVisible(MainApp.isSignIn());
+        //menu.findItem(R.id.menu_aboutus).setEnabled(MainApp.isSignIn());
+        menu.findItem(R.id.menu_guide).setVisible(MainApp.isSignIn());
         menu.findItem(R.id.menu_settings).setEnabled(false);
         return true;
     }
