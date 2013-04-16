@@ -50,6 +50,8 @@ public class RequestPool {
 	}
 	
 	private void checkPool() {
+		//FIXME? need to checkPool in a while until
+		// while (pool.size() > RunningCount && RunningCount < Count) {
 		if (pool.size() > RunningCount && RunningCount < Count) {
 			Requester r = pool.get(RunningCount);
 			r.r.asyncRequest(r.l, r.id, r.obj);

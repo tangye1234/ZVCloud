@@ -42,6 +42,8 @@ import android.widget.TextView;
 public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismissListener {
 	
 	private static final String TAG = "GroupDialog";
+	
+	private static final boolean canScrollToFuture = false; // can scroll to future?
 
 	private UIActivity<?> mContext;
 	private Window mWindow;
@@ -139,7 +141,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 
 		@Override
 		public int getCount() {
-			if (curPos == x.size() - 1) {
+			if (!canScrollToFuture && curPos == x.size() - 1) {
 				return 2;
 			} else {
 				return 3;
@@ -174,7 +176,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 			currentTime.add(Calendar.HOUR, 6);
 			if (curPos < x.size() - 1) {
 				curPos++;
-			} else {
+			} else if (canScrollToFuture) {
 				x.addLast(null);
 				y.addLast(null);
 				yrange.addLast(null);

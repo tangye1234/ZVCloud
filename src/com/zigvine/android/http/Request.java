@@ -316,6 +316,13 @@ public class Request {
 		public void onErr(int id, String err, int httpCode, Object...obj);
 	}
 	
+	/**
+	 * must call this function in a looper thread. the callback listener will be executed
+	 * in the current caller's looper thread
+	 * @param rl the response callback listener
+	 * @param requestId this request id will be delivered as a message id to the callback
+	 * @param obj this obj will be delivered as a message object to the callback
+	 */
 	public void asyncRequest(final ResponseListener rl, final int requestId, final Object...obj) {
 		final Handler handler = new Handler();
 		new Thread() {
