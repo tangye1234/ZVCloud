@@ -27,10 +27,12 @@
     <string name="loading_data">正在获取数据，稍等片刻</string>
     <string name="loaded_list">载入成功</string>
     <string name="menu_about">关于</string>
-    <string name="menu_license">协议许可</string>
+    <string name="menu_license">许可协议</string>
     <string name="menu_guide">提问帮助</string>
     <string name="menu_update">检查版本更新</string>
     <string name="menu_logoff">注销</string>
+    <string name="post_title">标题</string>
+    <string name="post_content">内容</string>
     <string name="hello_world">Hello world!</string>
     
     <string name="e1">请输入用户名</string>

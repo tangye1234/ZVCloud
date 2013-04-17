@@ -25,6 +25,7 @@ import android.util.Log;
 public class UpdateModel {
 
 	private static final String TAG = "UpdateModel";
+	private static final boolean DBG = false;
 	private static final String DEFAULT_URL = Request.HOST + "/update/update.txt";
 	private Context context;
 	
@@ -39,7 +40,7 @@ public class UpdateModel {
 	}
 
 	private int update(String pkgname, String urlget) {
-		Log.v(TAG, "prepare to update detection");
+		log("prepare to update detection");
 		// FIXME when wanna save data stream, consider to add 'force' argument to 
 		// determine wether the timestamp is in need
 		HttpGet request = new HttpGet(urlget + "?timestamp=" + new Date().getTime());
@@ -82,10 +83,10 @@ public class UpdateModel {
 			String[] arr = new String[datanum];
 			arr[ext] = "";
 			int i = 0;
-			//Log.v(TAG, "pkgname = " + pkgname);
+			//log("pkgname = " + pkgname);
 			while ((line = reader.readLine()) != null) {
 				try {
-					//Log.i(TAG, line);
+					//log(line);
 					if (i != 0 || line.equalsIgnoreCase(pkgname)) {
 						if (i < datanum - 1) {
 							arr[i++] = line;
@@ -99,21 +100,21 @@ public class UpdateModel {
 					continue;
 				}
 			}
-			Log.v(TAG, "pkg= " + arr[pkg]);
-			Log.v(TAG, "ver= " + arr[ver]);
-			Log.v(TAG, "sze= " + arr[sze]);
-			Log.v(TAG, "src= " + arr[src]);
-			Log.v(TAG, "ext= " + arr[ext]);
+			log("pkg= " + arr[pkg]);
+			log("ver= " + arr[ver]);
+			log("sze= " + arr[sze]);
+			log("src= " + arr[src]);
+			log("ext= " + arr[ext]);
 			if (pkgname.equalsIgnoreCase(arr[pkg])) {
 				if (isNewVersion(arr[ver])) {
-					Log.v(TAG, "need update");
+					log("need update");
 					notify(arr[ver], arr[src], arr[sze], arr[ext]);
 					return MainApp.CHECKED_NEED_UPGRADE;
 				}
 			}
 		} finally {
 			reader.close();
-			Log.v(TAG, "DONE Handle Http Resp");
+			log("DONE Handle Http Resp");
 		}
 		return MainApp.CHECKED_NO_NEED;
 	}
@@ -121,7 +122,7 @@ public class UpdateModel {
 	private boolean isNewVersion(String v) {
 		try {
 			String current = getVersionName();
-			Log.v(TAG, "current version = " + current);
+			log("current version = " + current);
 			if (current.equals(v)) {
 				return false;
 			} else {
@@ -144,11 +145,11 @@ public class UpdateModel {
 			edit.putString("src", src);
 			edit.putString("sze", size);
 			edit.putString("ext", ext);
-			Log.v(TAG, version + "," + src + "," + size + "," + ext);
+			log(version + "," + src + "," + size + "," + ext);
 			edit.commit();
 
 			Intent intent = new Intent(context, UpdateActivity.class);
-			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
 			context.startActivity(intent);
 		} else {
 			Log.e(TAG, "Server Configuration Error");
@@ -207,5 +208,9 @@ public class UpdateModel {
     		return number;
     	}
     }
+	
+	protected void log(String str) {
+		if (DBG) Log.v(TAG, str);
+	}
 	
 }

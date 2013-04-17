@@ -65,7 +65,7 @@ public class MainActivity extends UIActivity<MainActivity>
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		UI.setContentView(R.layout.main_viewflow);
-		UI.setFooterView();
+		UI.setupFooterView();
 		UI.setMainBackground(R.drawable.main_bg_blur);
 		
 		mMonitorPager = new MonitorPager(this);
@@ -138,7 +138,6 @@ public class MainActivity extends UIActivity<MainActivity>
 				.show();
 			}
 		}
-		
 	}
 
 	@Override
@@ -154,33 +153,29 @@ public class MainActivity extends UIActivity<MainActivity>
 	}
 	
 	@Override
-	protected void onStart() {
-		super.onStart();
-		startOnlineService(false);
+	protected void onResume() {
+		super.onResume();
 		MainApp.registerAlarmReceiver(this, true);
 		if (!refreshOnStart) {
+			// FIXME if the interval is too short, we no longer need refresh
 			if (pages[currentPos] != null) {
 				pages[currentPos].notifyLastRefreshTime();
 			}
 		} else {
 			refreshOnStart = false;
 		}
-		log("quit background, register alarm receiver");
 	}
 	
 	@Override
-	protected void onStop() {
-		super.onStop();
-		startOnlineService(true);
+	protected void onPause() {
+		super.onPause();
 		MainApp.unRegisterAlarmReceiver(this);
-		log("start background on depend, un-register alarm receiver");
 	}
 	
-	
-	private void startOnlineService(boolean foreground) {
-		Intent intent = new Intent(this, OnlineService.class);
-		intent.putExtra(OnlineService.FOREGROUND_EXTRA, foreground);
-		startService(intent);
+	@Override
+	public void finish() {
+		super.finish();
+		UI.startOnlineService(true);
 	}
 
 	@Override

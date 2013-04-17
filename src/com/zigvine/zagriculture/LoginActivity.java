@@ -59,6 +59,10 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		
 		if (MainApp.isSignIn()) {
 			Intent intent = new Intent(this, MainActivity.class);
+			Bundle b = getIntent().getExtras();
+			if (b != null && b.size() > 0) {
+				intent.putExtras(b);
+			}
 			startActivity(intent);
 			finish();
 			return;
@@ -256,7 +260,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	
 	@Override
 	public void onResp(int id, Resp resp, Object...obj) {
-		if (resp != null) log(resp.json.toString());
+		// if (resp != null) log(resp.json.toString());
 		boolean recovery = true;
 		switch (id) {
 		case VERIFY_ID:

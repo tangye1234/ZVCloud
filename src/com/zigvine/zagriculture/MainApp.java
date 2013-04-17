@@ -176,6 +176,7 @@ public class MainApp extends Application {
 	
 	public static void registerAlarmReceiver(AlarmReceiverListener listener, boolean fetchOnRegister) {
 		if (listener != null) {
+			Log.v(TAG, "register alarm receiver");
 			if (fetchOnRegister) {
 				listener.onAlarm(mAlarmCount, mAlarmGroup);
 			}
@@ -185,6 +186,7 @@ public class MainApp extends Application {
 	
 	public static void unRegisterAlarmReceiver(AlarmReceiverListener listener) {
 		if (listener != null) {
+			Log.v(TAG, "un-register alarm receiver");
 			mListeners.remove(listener);
 		}
 	}

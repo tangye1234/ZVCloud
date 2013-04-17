@@ -14,6 +14,7 @@ import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.util.Log;
 import android.view.Menu;
@@ -27,6 +28,9 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -38,6 +42,18 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 	protected String TAG;
 	protected final static String BTAG = "UIActivity";
 	private View mOverflowMenuButton;
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		UI.startOnlineService(false);
+	}
+
+	@Override
+	protected void onUserLeaveHint() {
+		super.onUserLeaveHint();
+		UI.startOnlineService(true);
+	}
 	
 	public static class UITool<S extends UIActivity<?>> {
 		
@@ -123,7 +139,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		/**
 		 * setup the footer view
 		 */
-		public void setFooterView() {
+		public void setupFooterView() {
 			checkCustomContentView();
 			activity.findViewById(R.id.custom_footer).setVisibility(View.VISIBLE);
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mContentView.getLayoutParams();
@@ -142,6 +158,30 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 			mContentView.setBackgroundResource(resid);
 		}
 		
+		/**
+		 * set the main content view's background resource
+		 * @param resid the resource id of the background
+		 */
+		public void setParentBackground(int resid) {
+			checkCustomContentView();
+			activity.findViewById(R.id.main_parent).setBackgroundResource(resid);
+		}
+		
+		public View addCustomMenuIcon(int resid, String text) {
+			checkCustomContentView();
+			ImageView im = new ImageView(activity);
+			im.setContentDescription(text);
+			im.setScaleType(ScaleType.CENTER_INSIDE);
+			im.setImageResource(resid);
+			im.setBackgroundResource(R.drawable.title_btn);
+			im.setOnClickListener(activity);
+			int dp = (int) activity.getResources().getDimension(R.dimen.title_height);
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp, dp);
+			ViewGroup customTitle = (ViewGroup) activity.findViewById(R.id.custom_title);
+			customTitle.addView(im, 2, lp);
+			return im;
+		}
+		
 		//public void setMainBackground()
 		
 		/**
@@ -152,6 +192,16 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 	    	Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 	    	activity.startActivity(intent);
 	    }
+		
+		/**
+		 * control the forground detection policy
+		 * @param foreground is this activity hidden
+		 */
+		public void startOnlineService(boolean foreground) {
+			Intent intent = new Intent(activity, OnlineService.class);
+			intent.putExtra(OnlineService.FOREGROUND_EXTRA, foreground);
+			activity.startService(intent);
+		}
 		
 		/**
 		 * Make a sliding menu in the activity
@@ -315,8 +365,17 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
     }
     
     @Override
+    public void startActivity(Intent intent) {
+    	ActivityInfo info = intent.resolveActivityInfo(getPackageManager(), 0);
+    	if (info.packageName.equals(getPackageName())) {
+    		intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+    	}
+    	super.startActivity(intent);
+    }
+    
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-    	//Intent intent;
+    	Intent intent;
         switch (item.getItemId()) {
         	case R.id.menu_settings:
         		//intent = new Intent(this, SettingsActivity.class);
@@ -327,8 +386,9 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
     			finish();
                 return true;
             case R.id.menu_guide:
-            	//intent = new Intent(this, GuideActivity.class);
-            	//startActivity(intent);
+            	intent = new Intent(this, PostActivity.class);
+            	startActivity(intent);
+            	overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
             	return true;
             case R.id.menu_about:
                 //showAboutDialog();

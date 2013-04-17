@@ -69,7 +69,7 @@ public class OnlineService extends Service implements Runnable, ResponseListener
     	}
     	if (intent.getBooleanExtra(FOREGROUND_EXTRA, false)) {
     		isForeground = true;
-    		alertNotification(alarmCount);
+    		alertNotification(alarmCount, false);
     	} else {
     		isForeground = false;
     		stopForeground(true);
@@ -99,9 +99,10 @@ public class OnlineService extends Service implements Runnable, ResponseListener
 			try {
 				JSONArray list = resp.json.getJSONArray("AlarmList");
 				MainApp.setAlarmSummary(list);
+				boolean ticker = alarmCount != list.length();
 				alarmCount = list.length();
 				if (isForeground) {
-					alertNotification(alarmCount);
+					alertNotification(alarmCount, ticker);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -115,10 +116,12 @@ public class OnlineService extends Service implements Runnable, ResponseListener
 		// TODO something that user want to be notified
 	}
 	
-	private void alertNotification(int count) {
+	private void alertNotification(int count, boolean ticker) {
 		int icon = R.drawable.alarm;
-		Intent newIntent = new Intent(this, MainActivity.class);
-		newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		Intent newIntent = new Intent(this, LoginActivity.class);
+		newIntent.setAction(Intent.ACTION_MAIN);
+		newIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+		newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		if (count > 0) {
 			newIntent.putExtra(MainActivity.POSITION_EXTRA, 2);
 		} else {
@@ -132,7 +135,7 @@ public class OnlineService extends Service implements Runnable, ResponseListener
         .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
         .setContentIntent(pi)
         .build();
-		if (count > 0) {
+		if (count > 0 && ticker) {
 			noti.tickerText = "监控有" + count + "个报警";
 		}
 		startForeground(icon, noti);
