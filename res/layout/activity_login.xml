@@ -3,14 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/main_bg"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context=".LoginActivity" >
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
         android:background="@drawable/alertdialog_white" >
 
         <ImageView
@@ -114,10 +114,23 @@
         </LinearLayout>
     </FrameLayout>
     
+    <ImageView
+        android:id="@+id/login_more_menu"
+        android:layout_width="@dimen/title_height"
+        android:layout_height="@dimen/title_height"
+        android:layout_gravity="top|right"
+        android:background="@drawable/title_btn"
+        android:contentDescription="@string/more_menu"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_menu_moreoverflow"
+        android:visibility="gone" />
+    
     <LinearLayout
         android:id="@+id/login_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
         android:background="@drawable/dialog_white_top"
         android:layout_gravity="bottom">
 

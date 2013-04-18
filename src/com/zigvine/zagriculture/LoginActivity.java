@@ -29,7 +29,7 @@ import android.widget.ProgressBar;
 public class LoginActivity extends UIActivity<LoginActivity>
 		implements ResponseListener {
 
-	View logo, loginPan, loginBtn, loginInput, loginProgress, toolbar;
+	View logo, loginPan, loginBtn, loginInput, loginProgress, toolbar, moreMenu;
 	ProgressBar progressBar;
 	EditText user, password;
 	CheckBox autoLogin;
@@ -76,6 +76,9 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		user = (EditText) findViewById(R.id.login_user);
 		password = (EditText) findViewById(R.id.login_password);
 		autoLogin = (CheckBox) findViewById(R.id.auto_login);
+		moreMenu = findViewById(R.id.login_more_menu);
+		
+		UI.setupMoreMenu(moreMenu);
 		
 		readLoginInfo();
 		
@@ -170,6 +173,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 					phoneText.setText(p);
 				}
 			}
+			UI.hideInputMethod();
 			new AlertDialog.Builder(this)
 			.setTitle("首次登录需要绑定手机")
 			.setIcon(R.drawable.ic_dialog_info)

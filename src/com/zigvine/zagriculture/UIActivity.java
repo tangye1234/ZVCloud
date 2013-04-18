@@ -167,6 +167,12 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 			activity.findViewById(R.id.main_parent).setBackgroundResource(resid);
 		}
 		
+		/**
+		 * add a custom button into the title bar
+		 * @param resid
+		 * @param text
+		 * @return the added button view
+		 */
 		public View addCustomMenuIcon(int resid, String text) {
 			checkCustomContentView();
 			ImageView im = new ImageView(activity);
@@ -180,6 +186,15 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 			ViewGroup customTitle = (ViewGroup) activity.findViewById(R.id.custom_title);
 			customTitle.addView(im, 2, lp);
 			return im;
+		}
+		
+		/**
+		 * change the visibility of the back navigation indicator
+		 * @param visibility
+		 */
+		public void setBackNavVisibility(int visibility) {
+			checkCustomContentView();
+			activity.findViewById(R.id.title_back).setVisibility(visibility);
 		}
 		
 		//public void setMainBackground()
@@ -251,6 +266,32 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 				activity.finish();
 			}
 			
+		}
+		
+		/**
+		 * set the standard SlidingMenu open-close listener
+		 * @param l the listener callback
+		 */
+		public void setStandardSlidingMenuListener(final MenuListener l) {
+			if (menu != null) {
+				if (l != null) {
+					menu.setOnOpenedListener(new SlidingMenu.OnOpenedListener() {
+						@Override
+						public void onOpened() {
+							l.onOpened();
+						}
+					});
+					menu.setOnClosedListener(new SlidingMenu.OnClosedListener() {
+						@Override
+						public void onClosed() {
+							l.onClosed();
+						}
+					});
+				} else {
+					menu.setOnOpenedListener(null);
+					menu.setOnClosedListener(null);
+				}
+			}
 		}
 		
 		/**
@@ -505,6 +546,11 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 			activity.onStandardMenuSelected(getItem(pos), pos, id);
 		}
 		
+	}
+	
+	public static interface MenuListener {
+		public void onOpened();
+		public void onClosed();
 	}
 
 }

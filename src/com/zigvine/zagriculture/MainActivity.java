@@ -23,7 +23,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 public class MainActivity extends UIActivity<MainActivity>
-		implements SwitchDecideListener, AlarmReceiverListener {
+		implements SwitchDecideListener, AlarmReceiverListener, UIActivity.MenuListener {
 	
 	ViewFlow mViewFlow;
 	ViewFlowAdapter adapter;
@@ -65,6 +65,7 @@ public class MainActivity extends UIActivity<MainActivity>
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		UI.setContentView(R.layout.main_viewflow);
+		UI.setBackNavVisibility(View.VISIBLE);
 		UI.setupFooterView();
 		UI.setMainBackground(R.drawable.main_bg_blur);
 		
@@ -77,6 +78,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		
 		UI.setupMoreMenu(null);
 		UI.createStandardSlidingMenu();
+		UI.setStandardSlidingMenuListener(this);
 		
 		title = (TextView) findViewById(R.id.title_text);
 		title.setText(getTitle());
@@ -328,6 +330,16 @@ public class MainActivity extends UIActivity<MainActivity>
 			return convertView;
 		}
 		
+	}
+
+	@Override
+	public void onOpened() {
+		UI.setBackNavVisibility(View.INVISIBLE);
+	}
+
+	@Override
+	public void onClosed() {
+		UI.setBackNavVisibility(View.VISIBLE);
 	}
 
 }

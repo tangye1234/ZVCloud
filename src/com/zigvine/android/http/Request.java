@@ -6,9 +6,12 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -24,6 +27,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
@@ -59,11 +65,13 @@ public class Request {
 	public static final String SendCommand = "/sendcommand";
 	public static final String DataChart = "/datachart";
 	public static final String LogOff = "/logoff";
+	public static final String SUBMITCONSU = "/submitconsu";
 	
 	private HttpManager httpManager;
 	private HttpRequestBase httpRequest;
 	private String errorMsg = null;
 	private List<BasicNameValuePair> params;
+	private Map<String, InputStreamBody> multiparts = null;
 	private JSONObject requestJson;
 	private String path;
 	private Resp resp;
@@ -162,7 +170,11 @@ public class Request {
 					if (requestJson != null) {
 						entity = new StringEntity(requestJson.toString(), HTTP.UTF_8);
 					} else {
-						entity = new UrlEncodedFormEntity(params, HTTP.UTF_8);
+						if (multiparts != null) {
+							entity = createMultipartEntity(HTTP.UTF_8);
+						} else {
+							entity = new UrlEncodedFormEntity(params, HTTP.UTF_8);
+						}
 					}
 					((HttpPost) httpRequest).setEntity(entity);
 				}
@@ -233,6 +245,19 @@ public class Request {
 		requestDone = true;
 		return resp != null;
 	}
+	
+	private HttpEntity createMultipartEntity(String charset) throws UnsupportedEncodingException {
+		MultipartEntity entity = new MultipartEntity();
+        // Don't try this. Server does not appear to support chunking.
+        // entity.addPart("media", new InputStreamBody(imageStream, "media"));
+		for (String key : multiparts.keySet()) {
+			entity.addPart(key, multiparts.get(key));
+		}
+        for (BasicNameValuePair param : params) {
+        	entity.addPart(param.getName(), new StringBody(param.getValue(), Charset.forName(charset)));
+        }
+        return entity;
+	}
 
 	public Resp getResponse() {
 		return resp;
@@ -270,6 +295,13 @@ public class Request {
 		params.add(new BasicNameValuePair(name, value));
 	}
 	
+	public final void setMartipartStream(String key, InputStreamBody body) {
+		if (isGetRequest) throw new RuntimeException("Get Request cannot add file martipart entity");
+		if (multiparts == null) {
+			multiparts = new WeakHashMap<String, InputStreamBody>();
+		}
+		multiparts.put(key, body);
+	}
 	
 	public final void setJSONEntity(JSONObject json) {
 		if (isGetRequest) throw new IllegalArgumentException("Get request should not contain a json object entity");
