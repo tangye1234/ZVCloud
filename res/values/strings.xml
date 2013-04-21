@@ -32,6 +32,7 @@
     <string name="menu_guide">提问帮助</string>
     <string name="menu_update">检查版本更新</string>
     <string name="menu_logoff">注销</string>
+    <string name="subforum_send">发表评论</string>
     <string name="post_title">标题</string>
     <string name="post_content">内容</string>
     <string name="post_image">选中的图片</string>

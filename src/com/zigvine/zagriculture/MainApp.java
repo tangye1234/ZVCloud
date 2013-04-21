@@ -1,5 +1,8 @@
 package com.zigvine.zagriculture;
 
+import httpimage.*;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,13 +17,16 @@ import com.zigvine.android.http.Request;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Environment;
 import android.util.Log;
 
 public class MainApp extends Application {
 	
 	private static final String TAG = "ZVMainApp";
+	private static String outDir;
 	private static String version;
 	private static int apilevel;
+	private static HttpImageManager imageManager;
 	private static MainApp instance = null;
 	
 	public static final int UNCHECKED = -1;
@@ -44,7 +50,29 @@ public class MainApp extends Application {
 			e.printStackTrace();
 			// TODO pend another thread to get version and agent
 		}
+		String f = Environment.getExternalStorageDirectory().getPath();
+		f += "/Android/data/" + this.getPackageName();
+		outDir = f;
+		imageManager = new HttpImageManager(HttpImageManager.createDefaultMemoryCache(),
+				new FileSystemPersistence(getOutCacheDir()));
+		
 		startCheck(null, false); // 自动检测版本更新
+	}
+	
+	public static HttpImageManager getHttpImageManager() {
+		return imageManager;
+	}
+	
+	public static String getOutDir() {
+		File f = new File(outDir);
+		f.mkdirs();
+		return outDir;
+	}
+	
+	public static String getOutCacheDir() {
+		File f = new File(outDir + "/cache");
+		f.mkdirs();
+		return f.getPath();
 	}
 	
 	public static interface UpdateCheckListener {
@@ -99,6 +127,7 @@ public class MainApp extends Application {
 	public static MainApp getInstance() {
 		return instance;
 	}
+
 	
 	
 	/****************** sign in session ********************/

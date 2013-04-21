@@ -1,6 +1,7 @@
 package com.zigvine.android.http;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -46,7 +47,7 @@ public class HttpManager {
 	        // 设置一些基本参数
 	        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
 	        HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-	        //HttpProtocolParams.setUseExpectContinue(params, isForUpload);
+	        //HttpProtocolParams.setUseExpectContinue(params, true);
 	        //HttpProtocolParams.setUserAgent(params, MainApp.getAgent());
 	        // 超时设置
 	        Resources res = context.getResources();
@@ -109,6 +110,13 @@ public class HttpManager {
 			return httpClient.execute(request, httpContext);
 		}
 		return null;
+	}
+	
+	public static void clean() {
+		if (httpManager != null) {
+			httpManager.connMgr.closeExpiredConnections();
+			httpManager.connMgr.closeIdleConnections(20, TimeUnit.SECONDS);
+		}
 	}
 	
 }

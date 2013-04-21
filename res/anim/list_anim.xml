@@ -10,7 +10,7 @@
     <translate
         android:duration="600"
         android:fromXDelta="0"
-        android:fromYDelta="200"
+        android:fromYDelta="500"
         android:toXDelta="0"
         android:toYDelta="0" />
 

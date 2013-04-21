@@ -46,6 +46,10 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 	@Override
 	protected void onResume() {
 		super.onResume();
+		if (UI.needSignIn && !MainApp.isSignIn()) {
+			finish();
+			return;
+		}
 		UI.startOnlineService(false);
 	}
 
@@ -63,10 +67,12 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		private ViewGroup mContentView;
 		private ListView list;
 		private boolean useCustomContentView;
+		private boolean needSignIn;
 		
 		public UITool(S activity) {
 			this.activity = activity;
 			useCustomContentView = false;
+			needSignIn = false;
 		}
 		
 		/**
@@ -75,6 +81,13 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		 */
 		public S getActivity() {
 			return activity;
+		}
+		
+		/**
+		 * should call very first of all initialization
+		 */
+		public void requestSignIn() {
+			needSignIn = true;
 		}
 		
 		/**
@@ -400,7 +413,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.menu_logoff).setVisible(MainApp.isSignIn());
         //menu.findItem(R.id.menu_aboutus).setEnabled(MainApp.isSignIn());
-        menu.findItem(R.id.menu_guide).setVisible(MainApp.isSignIn());
+        menu.findItem(R.id.menu_guide).setVisible(this instanceof MainActivity);
         menu.findItem(R.id.menu_settings).setEnabled(false);
         return true;
     }
@@ -408,7 +421,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
     @Override
     public void startActivity(Intent intent) {
     	ActivityInfo info = intent.resolveActivityInfo(getPackageManager(), 0);
-    	if (info.packageName.equals(getPackageName())) {
+    	if (info != null && info.packageName != null && info.packageName.equals(getPackageName())) {
     		intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
     	}
     	super.startActivity(intent);
@@ -424,10 +437,10 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
         		return true;
             case R.id.menu_logoff:
             	MainApp.quitSession();
-    			finish();
+    			super.finish(); // do not use override finish
                 return true;
             case R.id.menu_guide:
-            	intent = new Intent(this, PostActivity.class);
+            	intent = new Intent(this, ForumActivity.class);
             	startActivity(intent);
             	overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
             	return true;

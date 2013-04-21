@@ -1,5 +1,6 @@
 package com.zigvine.android.http;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
@@ -25,10 +26,11 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
@@ -65,13 +67,14 @@ public class Request {
 	public static final String SendCommand = "/sendcommand";
 	public static final String DataChart = "/datachart";
 	public static final String LogOff = "/logoff";
+	public static final String GetConsu = "/getconsu";
 	public static final String SUBMITCONSU = "/submitconsu";
 	
 	private HttpManager httpManager;
 	private HttpRequestBase httpRequest;
 	private String errorMsg = null;
 	private List<BasicNameValuePair> params;
-	private Map<String, InputStreamBody> multiparts = null;
+	private Map<String, FileBody> multiparts = null;
 	private JSONObject requestJson;
 	private String path;
 	private Resp resp;
@@ -174,6 +177,7 @@ public class Request {
 							entity = createMultipartEntity(HTTP.UTF_8);
 						} else {
 							entity = new UrlEncodedFormEntity(params, HTTP.UTF_8);
+							//entity = createMultipartEntity(HTTP.UTF_8);
 						}
 					}
 					((HttpPost) httpRequest).setEntity(entity);
@@ -194,6 +198,11 @@ public class Request {
 					} else {
 						for (BasicNameValuePair p:params) {
 							log("    \"" + p.getName() + "\": \"" + p.getValue() + "\",");
+						}
+						if (multiparts != null) {
+							for (String key : multiparts.keySet()) {
+								log("    \"" + key + "\": \"" + multiparts.get(key).getFilename() + "\",");
+							}
 						}
 					}
 					if (requestJson == null) {
@@ -250,12 +259,15 @@ public class Request {
 		MultipartEntity entity = new MultipartEntity();
         // Don't try this. Server does not appear to support chunking.
         // entity.addPart("media", new InputStreamBody(imageStream, "media"));
-		for (String key : multiparts.keySet()) {
-			entity.addPart(key, multiparts.get(key));
-		}
-        for (BasicNameValuePair param : params) {
+		for (BasicNameValuePair param : params) {
         	entity.addPart(param.getName(), new StringBody(param.getValue(), Charset.forName(charset)));
         }
+		if (multiparts != null) {
+			for (String key : multiparts.keySet()) {
+				entity.addPart(key, multiparts.get(key));
+				//entity.addPart(key, new FileBody(new java.io.File("/sdcard/_camera.jpg")));
+			}
+		}
         return entity;
 	}
 
@@ -295,12 +307,12 @@ public class Request {
 		params.add(new BasicNameValuePair(name, value));
 	}
 	
-	public final void setMartipartStream(String key, InputStreamBody body) {
+	public final void setFile(String key, File file) {
 		if (isGetRequest) throw new RuntimeException("Get Request cannot add file martipart entity");
 		if (multiparts == null) {
-			multiparts = new WeakHashMap<String, InputStreamBody>();
+			multiparts = new WeakHashMap<String, FileBody>();
 		}
-		multiparts.put(key, body);
+		multiparts.put(key, new FileBody(file));
 	}
 	
 	public final void setJSONEntity(JSONObject json) {
@@ -339,6 +351,9 @@ public class Request {
 		} else if (e instanceof SSLHandshakeException) {
 			return "服务器证书验证失败，请联系客服";
 		} else {
+			if (e instanceof ConnectionPoolTimeoutException) {
+            	HttpManager.clean();
+            }
 			return "您的网络不给力啊";
 		}
 	}

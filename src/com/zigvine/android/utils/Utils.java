@@ -1,10 +1,17 @@
 package com.zigvine.android.utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import com.zigvine.zagriculture.MainApp;
+
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.TypedValue;
 
 public class Utils {
@@ -92,6 +99,29 @@ public class Utils {
 			}
 			return min;
 		}
+	}
+	
+	public static File saveTmpBitmap(Bitmap bitmap) throws IOException {
+		File f = new File(MainApp.getOutCacheDir(), "_tmp_save.jpg");
+		f.createNewFile();
+		FileOutputStream fOut = null;
+		try {
+			fOut = new FileOutputStream(f);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fOut);
+		try {
+			fOut.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			fOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return f;
 	}
 	
 	public static final SimpleDateFormat DATETIME = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);

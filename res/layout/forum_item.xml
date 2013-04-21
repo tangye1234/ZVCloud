@@ -1,0 +1,93 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/pageritem_bg_top"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp" >
+
+        <TextView
+            android:id="@+id/forum_subject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/hello_world"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#6b6a6a"
+            android:textStyle="bold" />
+
+        <TextView
+	        android:id="@+id/forum_time"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_marginBottom="5dp"
+	        android:text="@string/hello_world"
+	        android:textAppearance="?android:attr/textAppearanceSmall"
+	        android:textColor="#7c7c7c" />
+        
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#3322c2fd" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="#22c2fd" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#3322c2fd" />
+
+    <TextView
+        android:id="@+id/forum_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/hello_world"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <FrameLayout
+        android:id="@+id/forum_image_frame"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginBottom="10dp" >
+
+        <ImageView
+            android:id="@+id/forum_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_line_repeat"
+            android:contentDescription="@string/post_image"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:id="@+id/forum_image_btn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/title_btn" />
+    </FrameLayout>
+    
+    <TextView
+        android:id="@+id/forum_child_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:paddingBottom="10dp"
+        android:paddingRight="15dp"
+        android:text="@string/menu_notice"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#6b6a6a" />
+
+</LinearLayout>

@@ -19,7 +19,6 @@ import com.zigvine.android.http.Request.Resp;
 import com.zigvine.android.http.Request.ResponseListener;
 import com.zigvine.android.utils.Quota;
 import com.zigvine.android.utils.Utils;
-import com.zigvine.zagriculture.BuildConfig;
 import com.zigvine.zagriculture.R;
 import com.zigvine.zagriculture.UIActivity;
 
@@ -458,7 +457,6 @@ public class ControlPager extends Pager
 				public void onClick(DialogInterface dialog, int which) {
 					Request request = new Request(Request.SendCommand);  // post method
 					request.setSoTimeout(30000); // a must for that
-					if (BuildConfig.DEBUG) request.setDebug(true); // just for debug
 					request.setParam("deviceID", deviceID);
 					request.setParam("state", String.valueOf(state));
 					request.asyncRequest(MonitorAdapter.this, position, json.hashCode(), groupid);

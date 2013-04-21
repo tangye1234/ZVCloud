@@ -65,6 +65,7 @@ public class MainActivity extends UIActivity<MainActivity>
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		UI.setContentView(R.layout.main_viewflow);
+		UI.requestSignIn();
 		UI.setBackNavVisibility(View.VISIBLE);
 		UI.setupFooterView();
 		UI.setMainBackground(R.drawable.main_bg_blur);

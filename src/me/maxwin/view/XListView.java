@@ -315,6 +315,17 @@ public class XListView extends ListView implements OnScrollListener {
 		}
 		return super.onTouchEvent(ev);
 	}
+	
+	public void showRefresh() {
+		if (mEnablePullRefresh) {
+			mPullRefreshing = true;
+			mHeaderView.setVisiableHeight(mHeaderViewHeight);
+			setSelection(0);
+			invokeOnScrolling();
+			mHeaderView.setState(XListViewHeader.STATE_REFRESHING);
+		}
+		resetHeaderHeight();
+	}
 
 	@Override
 	public void computeScroll() {

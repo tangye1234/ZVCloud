@@ -6,10 +6,13 @@ import com.zigvine.zagriculture.R;
 import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.LayoutAnimationController;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 
@@ -255,6 +258,65 @@ public class AnimUtils {
 		public void cancel() {
 			handler.removeCallbacks(this);
 		}
+	}
+	
+	public static class CustomLayoutAnimationController extends LayoutAnimationController {
+
+		public static final int ORDER_FROM_INDEX = 100;
+		
+		private Animation mAnimation;
+		private int mStartIndex;
+		private long mDuration;
+		
+		public CustomLayoutAnimationController(Animation animation) {
+			super(animation);
+			// TODO Auto-generated constructor stub
+		}
+		public CustomLayoutAnimationController(Animation animation, float delay) {
+			super(animation, delay);
+			// TODO Auto-generated constructor stub
+		}
+		public CustomLayoutAnimationController(Context context,
+				AttributeSet attrs) {
+			super(context, attrs);
+			// TODO Auto-generated constructor stub
+		}
+		
+		public void setStartIndex(int startIndex) {
+			mStartIndex = startIndex;
+			setOrder(ORDER_FROM_INDEX);
+			mAnimation = getAnimation();
+			mDuration = mAnimation.getDuration();
+		}
+		
+		@Override
+		protected long getDelayForView(View view) {
+			if (getOrder() == ORDER_FROM_INDEX) {
+				ViewGroup.LayoutParams lp = view.getLayoutParams();
+		        AnimationParameters params = lp.layoutAnimationParameters;
+		        if (params.index < mStartIndex) {
+		        	mAnimation.setDuration(0);
+		        } else {
+		        	mAnimation.setDuration(mDuration);
+		        }
+			}
+			return super.getDelayForView(view);
+		}
+		
+		@Override
+		protected int getTransformedIndex(AnimationParameters params) {
+	        switch (getOrder()) {
+	        	case ORDER_FROM_INDEX:
+	        		if (params.index < mStartIndex) {
+	        			return 0;
+	        		} else {
+	        			return params.index - mStartIndex;
+	        		}
+	            default:
+	                return super.getTransformedIndex(params);
+	        }
+	    }
+
 	}
 
 }

@@ -1,12 +1,8 @@
 package com.zigvine.zagriculture;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-
-import org.apache.http.entity.mime.content.InputStreamBody;
+import java.io.FileOutputStream;
 
 import com.zigvine.android.http.Request;
 import com.zigvine.android.http.Request.Resp;
@@ -18,12 +14,10 @@ import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -41,6 +35,7 @@ public class PostActivity extends UIActivity<PostActivity>
 	private static final int TAKE_PHOTO = 1;
 	private static final int DELE_PHOTO = 2;
 	private static final String[] STRARR = new String[] {"从照片库中挑选", "拍摄新照片", "舍弃该照片"};
+	private static final String TEMP_IMAGE = "_tmp.jpg";
 	
 	TextView title;
 	View titleMain, frame, btn;
@@ -56,6 +51,7 @@ public class PostActivity extends UIActivity<PostActivity>
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		UI.setContentView(R.layout.main_post);
+		UI.requestSignIn();
 		UI.setBackNavVisibility(View.VISIBLE);
 		//UI.setParentBackground(R.drawable.light_bg);
 		UI.setMainBackground(R.drawable.light_bg);
@@ -148,38 +144,39 @@ public class PostActivity extends UIActivity<PostActivity>
 			UI.toast("内容不能为空");
 			return;
 		}
-		InputStreamBody upload = null;
+		File upload = null;
 		if (frame.getVisibility() == View.VISIBLE) {
 			Bitmap bitmap = null;
 			try {
 				if (contentUri != null) {
-					bitmap = resizeBitmap(getContentResolver(), contentUri, 800, 600);
+					bitmap = resizeBitmap(getContentResolver(), contentUri, 400, 300);
 				} else if (outputFileUri != null) {
-					bitmap = resizeBitmap(outputFileUri, 800, 600);
+					bitmap = resizeBitmap(outputFileUri, 400, 300);
 				}
 			} catch (FileNotFoundException e) {}
 			if (bitmap == null) {
 				UI.toast("图片已经不存在，请重新选择");
 				return;
 			}
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			bitmap.compress(CompressFormat.JPEG, 90, stream);
-			InputStream is = new ByteArrayInputStream(stream.toByteArray());
-			upload = new InputStreamBody(is, "upload.jpg");
+			upload = new File(MainApp.getOutCacheDir(), TEMP_IMAGE);
+			try { 
+				FileOutputStream out = new FileOutputStream(upload);
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+			} catch (Exception e) { e.printStackTrace(); }
 		}
 		sendNow(postT, postC, upload);
 	}
 	
-	private void sendNow(final String postT, final String postC, final InputStreamBody upload) {
+	private void sendNow(final String postT, final String postC, final File upload) {
 		UI.hideInputMethod();
 		findViewById(SEND_ID).setEnabled(false);
 		final Request request = new Request(Request.SUBMITCONSU);
 		request.setParam("subject", postT);
 		request.setParam("content", postC);
 		request.setParam("parent_id", "0"); // TODO to indicate this is a new subject a just a sub response to a parent subject
-		request.setSoTimeout(30000);
 		if (upload != null) {
-			request.setMartipartStream("plant_photo", upload);
+			request.setSoTimeout(30000);
+			request.setFile("plant_photo", upload);
 		}
 		
 		final ProgressDialog pd = new ProgressDialog(this);
@@ -200,6 +197,7 @@ public class PostActivity extends UIActivity<PostActivity>
 				if (resp != null) {
 					if (resp.success) {
 						UI.toast("发帖成功");
+						setResult(RESULT_OK);
 						finish();
 					} else {
 						UI.toast("上传失败");
@@ -238,7 +236,7 @@ public class PostActivity extends UIActivity<PostActivity>
             break;
 		case TAKE_PHOTO:
 			intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-			File out = new File(Environment.getExternalStorageDirectory(), "_camera.jpg");
+			File out = new File(MainApp.getOutCacheDir(), TEMP_IMAGE);
 			outputFileUri = Uri.fromFile(out);
 			intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
 			startActivityForResult(intent, TAKE_PHOTO);
@@ -281,6 +279,12 @@ public class PostActivity extends UIActivity<PostActivity>
 	                Bitmap bitmap = resizeBitmap(outputFileUri, sizeW, sizeH);
 	                new File(outputFileUri.getPath()).deleteOnExit();
 	                img.setImageBitmap(bitmap);
+					/*
+					 * try { java.io.FileOutputStream out = new
+					 * java.io.FileOutputStream("/sdcard/_camera.jpg");
+					 * bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out); }
+					 * catch (Exception e) { e.printStackTrace(); }
+					 */
 	                frame.setVisibility(View.VISIBLE);
 				}
 			}

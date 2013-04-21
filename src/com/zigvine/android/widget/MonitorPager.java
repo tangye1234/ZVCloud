@@ -98,6 +98,7 @@ public class MonitorPager extends Pager
 	public void refreshCurrentGroupNow() {
 		if (currentGroup >= 0) {
 			refreshData(currentGroup, true);
+			// TODO list.showRefresh();
 		}
 	}
 	
