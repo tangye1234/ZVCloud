@@ -180,8 +180,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 			request.setParam("count", count + "");
 			request.setParam("order", "1");
 			if (lastid > -1) {
-				// FIXME !!!!!!!!!! use last_id instead TODO
-				request.setParam("first_id", lastid + "");
+				request.setParam("last_id", lastid + "");
 			}
 			request.asyncRequest(this, requestId, scrollEnd);
 		} else {

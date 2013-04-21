@@ -49,7 +49,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	private static final String CERTIFICATE = "certificate";
 	private static final String LOGININFO = "logininfo";
 	private static final String KEY_CERT = "Cert";
-	private static final boolean NORMAL_LOGIN = true;
+	private static final boolean NORMAL_LOGIN = false;
 	
 	private static final boolean isPreAccountSet = false;//BuildConfig.DEBUG;
 

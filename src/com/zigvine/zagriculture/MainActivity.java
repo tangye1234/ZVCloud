@@ -68,7 +68,8 @@ public class MainActivity extends UIActivity<MainActivity>
 		UI.requestSignIn();
 		UI.setBackNavVisibility(View.VISIBLE);
 		UI.setupFooterView();
-		UI.setMainBackground(R.drawable.main_bg_blur);
+		//UI.setMainBackground(R.drawable.main_bg_blur);
+		UI.setMainBackground(R.drawable.main_bg_blue);
 		
 		mMonitorPager = new MonitorPager(this);
 		mControlPager = new ControlPager(this);
