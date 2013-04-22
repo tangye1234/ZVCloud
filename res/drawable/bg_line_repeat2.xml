@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item android:bottom="4dp" android:left="4dp" android:right="4dp" android:drawable="@color/opaque_white" />
+    <item android:bottom="4dp" android:left="4dp" android:right="4dp" android:drawable="@drawable/bg_line_repeat" />
+
+</layer-list>

@@ -110,6 +110,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 				if (left > 0) {
 					DataItem g = new DataItem(left);
 					g.animationState = 2;
+					g.imageLoadState = 0;
 					add(i, g);
 				}
 			} catch (JSONException e) {
@@ -126,22 +127,24 @@ public class ForumActivity extends UIActivity<ForumActivity>
 				JSONArray arr = resp.json.getJSONArray("ConsultationList");
 				int i = 0;
 				int len = arr.length();
-				if (len > left) {
-					left = len - left;
+				if (len < left) {
+					left = left - len;
 				} else {
-					left = 0;
 					len = left;
+					left = 0;
 				}
 				for (; i < len; i++) {
 					JSONObject obj = arr.getJSONObject(i);
 					DataItem g = new DataItem(obj);
 					g.animationState = 2;
+					g.imageLoadState = 0;
 					add(i + index, g);
 				}
 				if (left > 0) {
 					mid.left = left;
+					mid.imageLoadState = 0;
 				} else {
-					remove(i);
+					remove(i + index);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -332,14 +335,20 @@ public class ForumActivity extends UIActivity<ForumActivity>
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final DataItem g = (DataItem) getItem(position);
-			if (convertView == null) {
-				convertView =  View.inflate(UI.getActivity(), R.layout.forum_item, null);
-				convertView.findViewById(R.id.forum_image_btn).setVisibility(View.GONE); // FIXME?
-			}
-			if (position == 0) {
-				convertView.setBackgroundResource(R.drawable.pageritem_bg_top);
-			} else {
-				convertView.setBackgroundResource(R.drawable.pageritem_bg);
+			if (g.left == 0) {
+				if (convertView == null || convertView.findViewById(R.id.forum_image_btn) == null) {
+					convertView = View.inflate(UI.getActivity(), R.layout.forum_item, null);
+					convertView.findViewById(R.id.forum_image_btn).setVisibility(View.GONE); // FIXME?
+				}
+				if (position == 0) {
+					convertView.setBackgroundResource(R.drawable.pageritem_bg_top);
+				} else {
+					convertView.setBackgroundResource(R.drawable.pageritem_bg);
+				}
+			} else { // insert view
+				if (convertView == null || convertView.findViewById(R.id.forum_image_btn) != null) {
+					convertView = View.inflate(UI.getActivity(), R.layout.forum_item_insert, null);
+				}
 			}
 			//convertView.setClickable(true);
 			// animation begin ---------------
@@ -379,7 +388,13 @@ public class ForumActivity extends UIActivity<ForumActivity>
 			JSONObjectExt json = g.json;
 			
 			if (g.left != 0) {
-				// TODO show loading or not for inserting
+				TextView tv = (TextView) convertView.findViewById(R.id.forum_item_insert_text);
+				tv.setText("有" + g.left + "条记录未加载，请点击");
+				if (g.imageLoadState == 0) {
+					convertView.findViewById(R.id.forum_item_insert_progress).setVisibility(View.GONE);
+				} else {
+					convertView.findViewById(R.id.forum_item_insert_progress).setVisibility(View.VISIBLE);
+				}
 			} else {
 				int MAX = 40;
 				String subject = json.getString("Subject", "");
@@ -551,9 +566,13 @@ public class ForumActivity extends UIActivity<ForumActivity>
 			startActivityForResult(intent, SUBPOST_REQUEST);
 			tmpIndex = pos;
 			overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
-		} else {
-			// TODO refresh inserting
-			UI.toast("加载中间的内容，请点击刷新");
+		} else if (pos > 0) {
+			//UI.toast("加载中间的内容，请点击刷新");
+			DataItem last = (DataItem) adapter.getItem(pos - 1);
+			long lastid = last.id;
+			fetchData(mCount, mPID, -1, lastid, pos);
+			g.imageLoadState = 1;
+			adapter.notifyDataSetChanged();
 		}
 		
 	}

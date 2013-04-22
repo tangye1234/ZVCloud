@@ -263,6 +263,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 				int count = cachedData.size();
 				if (count > mChildCount) {
 					mChildCount = count;
+					isUpdated = true;
 				}
 				return count + 1;
 			}

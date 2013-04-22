@@ -11,7 +11,9 @@ import com.zigvine.android.widget.Pager;
 import com.zigvine.zagriculture.MainApp.UpdateCheckListener;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -445,29 +447,49 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
             	overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
             	return true;
             case R.id.menu_about:
-                //showAboutDialog();
+                showAboutDialog();
                 return true;
             case R.id.menu_license:
             	UI.startWebSite("http://www.zigvine.com");
             	return true;
             case R.id.menu_update:
-            	final ProgressDialog pd = new ProgressDialog(this);
-            	pd.setMessage("正在检查更新");
-            	pd.setCanceledOnTouchOutside(false);
-            	pd.show();
-            	MainApp.getInstance().startCheck(new UpdateCheckListener() {
-					@Override
-					public void onCheckedOver(int result) {
-						pd.dismiss();
-						if (result == MainApp.CHECKED_NO_NEED) {
-							UI.toast("您已经使用的是最新版本");
-						} else if (result == MainApp.UNCHECKED) {
-							UI.toast("更新检测失败，请检查网络");
-						}
-					}
-            	}, true);
+            	manualUpdateCheck();
+            	return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    
+    private void manualUpdateCheck() {
+    	final ProgressDialog pd = new ProgressDialog(this);
+    	pd.setMessage("正在检查更新");
+    	pd.setCanceledOnTouchOutside(false);
+    	pd.show();
+    	MainApp.getInstance().startCheck(new UpdateCheckListener() {
+			@Override
+			public void onCheckedOver(int result) {
+				pd.dismiss();
+				if (result == MainApp.CHECKED_NO_NEED) {
+					UI.toast("您已经使用的是最新版本");
+				} else if (result == MainApp.UNCHECKED) {
+					UI.toast("更新检测失败，请检查网络");
+				}
+			}
+    	}, true);
+    }
+    
+    private void showAboutDialog() {
+    	new AlertDialog.Builder(this)
+    	.setTitle("关于" + getString(R.string.app_name))
+        .setIcon(R.drawable.ic_launcher)
+        .setMessage("版本: " + MainApp.getVersion())
+        .setPositiveButton("检查更新", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				manualUpdateCheck();
+			}
+		})
+		.setNegativeButton(android.R.string.cancel, null)
+        .show();
     }
 	
 	/*package*/ void log(String s) {
