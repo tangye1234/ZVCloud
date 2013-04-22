@@ -64,12 +64,12 @@ public class GraphView extends View {
 		linePaint = new Paint();
 		linePaint.setAntiAlias(true);
 		linePaint.setStrokeWidth(2);
-		linePaint.setColor(0xbb1699cf);
+		linePaint.setColor(0xff1699cf);
 		
 		axisPaint = new Paint();
 		axisPaint.setAntiAlias(true);
 		axisPaint.setStrokeWidth(1);
-		axisPaint.setColor(0x9926c3f7);
+		axisPaint.setColor(0xff26c3f7);
 	}
 	
 	/**

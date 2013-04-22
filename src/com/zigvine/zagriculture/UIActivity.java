@@ -420,13 +420,22 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
         return true;
     }
     
-    @Override
+    /*@Override
     public void startActivity(Intent intent) {
     	ActivityInfo info = intent.resolveActivityInfo(getPackageManager(), 0);
     	if (info != null && info.packageName != null && info.packageName.equals(getPackageName())) {
     		intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
     	}
     	super.startActivity(intent);
+    }*/
+    
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+    	ActivityInfo info = intent.resolveActivityInfo(getPackageManager(), 0);
+    	if (info != null && info.packageName != null && info.packageName.equals(getPackageName())) {
+    		intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+    	}
+    	super.startActivityForResult(intent, requestCode);
     }
     
     @Override
