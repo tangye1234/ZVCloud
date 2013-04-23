@@ -23,8 +23,9 @@
         
         <LinearLayout 
             android:id="@+id/title_main"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="@dimen/title_height"
+            android:layout_weight="1"
             android:background="@drawable/title_btn"
             android:orientation="horizontal">
             
@@ -51,20 +52,17 @@
 	
 	        <TextView
 	            android:id="@+id/title_text"
-	            android:layout_width="wrap_content"
+	            android:layout_width="match_parent"
 	            android:layout_height="@dimen/title_height"
-	            android:gravity="center"
+	            android:gravity="center_vertical|left"
 	            android:paddingRight="10dp"
 	            android:text="@string/hello_world"
+	            android:ellipsize="end"
+	            android:lines="1"
 	            android:textAppearance="?android:attr/textAppearanceLarge"
 	            android:textColor="#ccffffff" />
         
         </LinearLayout>
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="@dimen/title_height"
-            android:layout_weight="1" />
 
         <ImageView
             android:id="@+id/refresh_menu"
