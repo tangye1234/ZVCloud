@@ -147,6 +147,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 			parentObj = new JSONObjectExt(json);
 			String subject = parentObj.getString("Subject", "");
 			mChildCount = parentObj.getInt("ChildCount", 0);
+			mChildCount = intent.getIntExtra(EXTRA_CNT, mChildCount);
 			title.setText(subject);
 		} catch (JSONException e) {
 			finish();

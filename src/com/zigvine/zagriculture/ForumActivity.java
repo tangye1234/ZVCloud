@@ -562,6 +562,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 		if (g.left == 0) {
 			Intent intent = new Intent(this, SubForumActivity.class);
 			intent.putExtra(SubForumActivity.EXTRA_PID, g.id);
+			intent.putExtra(SubForumActivity.EXTRA_CNT, g.childCount);
 			intent.putExtra(SubForumActivity.EXTRA_OBJ, g.json.toString());
 			startActivityForResult(intent, SUBPOST_REQUEST);
 			tmpIndex = pos;
