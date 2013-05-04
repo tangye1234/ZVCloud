@@ -43,11 +43,12 @@ public class NetworkResourceLoader {
 
     
     /**
-     * Gets the input stream from a response entity. If the entity is gzipped then this will get a
-     * stream over the uncompressed data.
-     *
-     * @param entity the entity whose content should be read
-     * @return the input stream to read from
+     * Get the http response from a http get method
+     * @param httpGet
+     * @return the response to the request. This is always a final response,
+     * never an intermediate response with an 1xx status code. Whether redirects
+     * or authentication challenges will be returned or handled automatically
+     * depends on the implementation and configuration of this client.
      * @throws IOException
      */
     public HttpResponse load (HttpGet httpGet) throws IOException{

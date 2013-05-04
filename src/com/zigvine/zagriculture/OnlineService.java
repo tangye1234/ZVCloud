@@ -21,7 +21,7 @@ import android.support.v4.app.NotificationCompat;
 public class OnlineService extends Service implements Runnable, ResponseListener {
 	
 	public static final String FOREGROUND_EXTRA = "com.zigvine.zagriculture.service_foreground";
-	public static final long GET_ALARM_PERIOD = 5 * 60 * 1000;  // 5 mins
+	public static long GET_ALARM_PERIOD = 5 * 60 * 1000;  // 5 mins
 	
 	int requestId;
 	Handler handler;
@@ -73,7 +73,12 @@ public class OnlineService extends Service implements Runnable, ResponseListener
     	} else {
     		isForeground = false;
     		stopForeground(true);
-    		if (!isRequestStarted) {
+    		GET_ALARM_PERIOD = SettingsActivity.getPeriod(this);
+    		android.util.Log.d("OnlineService", "period=" + GET_ALARM_PERIOD);
+    		if (GET_ALARM_PERIOD <= 0) {
+    			isRequestStarted = false;
+    			++requestId;
+    		} else if (!isRequestStarted) {
     			isRequestStarted = true;
     			run();
     		}

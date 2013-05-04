@@ -2,6 +2,7 @@ package com.zigvine.android.http;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -26,6 +27,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.entity.StringEntity;
@@ -53,7 +55,7 @@ public class Request {
 		if (GLOBAL_DBG) {
 			HOST = "http://218.246.112.92";
 		} else {
-			HOST = "http://218.246.112.92";
+			HOST = "http://www.zigvine.com";
 		}
 	}
 	public static final String URL = HOST + "/dservice";
@@ -235,7 +237,8 @@ public class Request {
 						content = EntityUtils.toString(entity, HTTP.UTF_8);
 					} else {
 						errorMsg = getBadResponse(httpStatusCode);
-						entity.consumeContent();
+						//entity.consumeContent();
+						ConsumeEntity(entity);
 					}
 				}
 			} catch (ClientProtocolException e) {
@@ -346,8 +349,8 @@ public class Request {
 	
 	/* need to be overridden, the same thread as request function*/
 	protected String processIOExceptionCallback(boolean ignore, IOException e) {
-		log(ignore + "=ignore, excepetion:");
-		e.printStackTrace();
+		//log(ignore + "=ignore, excepetion:");
+		//e.printStackTrace();
 		//return ignore? null:e.getMessage();
 		if (ignore) return null;
 		
@@ -358,13 +361,16 @@ public class Request {
 		} else if (e instanceof java.net.ProtocolException) {
 			return "连接服务失败，请更新您的客户端";
 		} else if (e.getCause() instanceof IllegalStateException) {
-			return "连接池关闭错误";
+			return "数据内容无法重复获取";
 		} else if (e instanceof SSLPeerUnverifiedException) {
 			return "无法验证服务器证书，请联系客服";
 		} else if (e instanceof SSLHandshakeException) {
 			return "服务器证书验证失败，请联系客服";
+		} else if (e instanceof ConnectTimeoutException) {
+			return "无法建立连接，服务器可能已断线";
 		} else {
 			if (e instanceof ConnectionPoolTimeoutException) {
+				e.printStackTrace();
 				httpManager.clean();
             }
 			return "您的网络不给力啊";
@@ -421,6 +427,18 @@ public class Request {
 				}
 			}
 		}.start();
+	}
+	
+	public static void ConsumeEntity(HttpEntity entity) throws IllegalStateException, IOException {
+		if (entity == null) {
+			return;
+		}
+		if (entity.isStreaming()) {
+			InputStream is = entity.getContent();
+			if (is != null) {
+				is.close();
+			}
+		}
 	}
 
 }

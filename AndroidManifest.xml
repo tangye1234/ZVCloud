@@ -52,6 +52,11 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
+            android:name="com.zigvine.zagriculture.SettingsActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+        <activity
             android:name="com.zigvine.zagriculture.UpdateActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"

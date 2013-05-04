@@ -103,6 +103,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 		
 		/**
 		 * To toast a prompt for short indications
+		 * if param is null, then just cancel the current toast which is showing
 		 */
 		public void toast(final CharSequence err) {
 			activity.runOnUiThread(new Runnable() {
@@ -111,8 +112,10 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 					if (toast != null) {
 						toast.cancel();
 					}
-					toast = Toast.makeText(activity, err, Toast.LENGTH_SHORT);
-					toast.show();
+					if (err != null) {
+						toast = Toast.makeText(activity, err, Toast.LENGTH_SHORT);
+						toast.show();
+					}
 				}
 			});
 			
@@ -415,8 +418,8 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.menu_logoff).setVisible(MainApp.isSignIn());
         //menu.findItem(R.id.menu_aboutus).setEnabled(MainApp.isSignIn());
-        menu.findItem(R.id.menu_guide).setVisible(this instanceof MainActivity);
-        menu.findItem(R.id.menu_settings).setEnabled(false);
+        //menu.findItem(R.id.menu_guide).setVisible(this instanceof MainActivity);
+        //menu.findItem(R.id.menu_settings).setEnabled(false);
         return true;
     }
     
@@ -443,18 +446,13 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
     	Intent intent;
         switch (item.getItemId()) {
         	case R.id.menu_settings:
-        		//intent = new Intent(this, SettingsActivity.class);
-        		//startActivity(intent);
+        		intent = new Intent(this, SettingsActivity.class);
+        		startActivity(intent);
         		return true;
             case R.id.menu_logoff:
             	MainApp.quitSession();
     			super.finish(); // do not use override finish
                 return true;
-            case R.id.menu_guide:
-            	intent = new Intent(this, ForumActivity.class);
-            	startActivity(intent);
-            	overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
-            	return true;
             case R.id.menu_about:
                 showAboutDialog();
                 return true;

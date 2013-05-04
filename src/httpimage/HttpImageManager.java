@@ -36,10 +36,12 @@ import java.util.zip.GZIPInputStream;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 
 import com.zigvine.android.http.HttpManager;
+import com.zigvine.android.http.Request;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -348,27 +350,34 @@ public class HttpImageManager{
 	                                    Log.i(TAG, header.toString());
 	                                }
 	                            }
-	
+
 	                            HttpEntity entity = httpResp.getEntity();
+	                            
 	                            if (entity != null) {
-	                                InputStream responseStream = entity.getContent();
-	                                try {
-	                                    Header header = entity.getContentEncoding();
-	                                    if (header != null && header.getValue() != null && header.getValue().contains("gzip")) {
-	                                        responseStream =  new GZIPInputStream(responseStream);
-	                                    }
-	
-	                                    responseStream = new FlushedInputStream(responseStream); //patch the inputstream
-	                                    
-	                                    long contentSize = entity.getContentLength();
-	                                    binary = readInputStreamProgressively(responseStream, (int)contentSize, request);
-	                                    data = BitmapUtil.decodeByteArray(binary, mMaxNumOfPixelsConstraint);
-	                                } 
-	                                finally {
-	                                    if(responseStream != null) {
-	                                        try { responseStream.close(); } catch (IOException e) {}
-	                                    }
-	                                }
+	                            	int code = httpResp.getStatusLine().getStatusCode();
+	                            	if (code != HttpStatus.SC_OK) {
+		                            	Request.ConsumeEntity(entity);
+		                            	throw new IOException("Url path is not found, with returned status code " + code);
+		                            } else {
+		                                InputStream responseStream = entity.getContent();
+		                                try {
+		                                    Header header = entity.getContentEncoding();
+		                                    if (header != null && header.getValue() != null && header.getValue().contains("gzip")) {
+		                                        responseStream =  new GZIPInputStream(responseStream);
+		                                    }
+		
+		                                    responseStream = new FlushedInputStream(responseStream); //patch the inputstream
+		                                    
+		                                    long contentSize = entity.getContentLength();
+		                                    binary = readInputStreamProgressively(responseStream, (int)contentSize, request);
+		                                    data = BitmapUtil.decodeByteArray(binary, mMaxNumOfPixelsConstraint);
+		                                } 
+		                                finally {
+		                                    if(responseStream != null) {
+		                                        try { responseStream.close(); } catch (IOException e) {}
+		                                    }
+		                                }
+		                            }
 	                            }
                             } finally {
                             	if (isManaged) {
@@ -380,7 +389,7 @@ public class HttpImageManager{
                             }
 
                             if(data == null) 
-                                throw new RuntimeException("data from remote can't be decoded to bitmap");
+                                throw new IOException("data from remote can't be decoded to bitmap");
 
                             if(DEBUG) Log.d(TAG, "decoded image: " + data.getWidth() + "x" + data.getHeight() );
                             if(DEBUG) Log.d(TAG, "time consumed: " + (System.currentTimeMillis() - millis));

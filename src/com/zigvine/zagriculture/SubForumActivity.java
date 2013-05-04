@@ -157,7 +157,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 		}
 		
 		mPID = intent.getLongExtra(EXTRA_PID, 0l);
-		mCount = 5;
+		mCount = 6;
 		mReachEnd = false;
 		cachedData = new DataArray(null);
 		adapter.notifyDataSetChanged();
@@ -421,8 +421,14 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 				cachedData.append(resp);
 			}
 			adapter.notifyDataSetChanged();
-			if (scrollEnd) {
-				list.setSelection(adapter.getCount() - 1);
+			if (scrollEnd && mReachEnd) {
+				list.postDelayed(new Runnable() {
+					public void run() {
+						UI.toast(null);
+						list.smoothScrollToPosition(adapter.getCount() - 1);
+					}
+				}, 500);
+				//list.setSelection();
 			}
 		}
 		loadingEnd();
@@ -507,6 +513,10 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 						mChildCount++;
 						adapter.notifyDataSetChanged();
 						onLoadMore(true);
+						if (mLoadingView.getVisibility() != View.VISIBLE) {
+							mLoadingView.clearAnimation();
+							AnimUtils.DropIn.startAnimation(mLoadingView, 300);
+						}
 						postContent.setText("");
 					} else {
 						UI.toast("回帖失败");

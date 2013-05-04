@@ -41,6 +41,8 @@ public class MainActivity extends UIActivity<MainActivity>
 	boolean refreshOnStart;
 	String currentGroupName, currentGroupDesc;
 	
+	private static final int ASK_ID = 0x100;
+	
 	public static final String POSITION_EXTRA = "com.zigvine.zagriculture.jump_position";
 	public static final String NOTICE_EXTRA = "com.zigvine.zagriculture.notice"; 
 	
@@ -81,6 +83,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		UI.setupMoreMenu(null);
 		UI.createStandardSlidingMenu();
 		UI.setStandardSlidingMenuListener(this);
+		UI.addCustomMenuIcon(R.drawable.ic_menu_ask, getString(R.string.menu_guide)).setId(ASK_ID);
 		
 		title = (TextView) findViewById(R.id.title_text);
 		title.setText(getTitle());
@@ -184,6 +187,7 @@ public class MainActivity extends UIActivity<MainActivity>
 
 	@Override
 	public void onClick(View view) {
+		Intent intent;
 		switch(view.getId()) {
 		case R.id.menu_signoff:
 			MainApp.quitSession();
@@ -203,6 +207,11 @@ public class MainActivity extends UIActivity<MainActivity>
 				pages[currentPos].refreshCurrentGroupNow();
 			}
 			break;
+		case ASK_ID:
+			intent = new Intent(this, ForumActivity.class);
+        	startActivity(intent);
+        	overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
+        	break;
 		}
 	}
 	
