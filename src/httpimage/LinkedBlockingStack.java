@@ -39,7 +39,7 @@ public class LinkedBlockingStack<E> extends AbstractQueue<E>
         addAll(c);
     }
 
-    /** Insert node at front of list */
+    /** Insert node at front of list, very important to image blocking queue */
     private void insert(E o) {
         head = new Node<E>(o, head);
         ++count;

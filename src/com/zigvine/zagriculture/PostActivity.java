@@ -170,7 +170,7 @@ public class PostActivity extends UIActivity<PostActivity>
 	private void sendNow(final String postT, final String postC, final File upload) {
 		UI.hideInputMethod();
 		findViewById(SEND_ID).setEnabled(false);
-		final Request request = new Request(Request.SUBMITCONSU);
+		final Request request = new Request(Request.SubmitConsu);
 		request.setParam("subject", postT);
 		request.setParam("content", postC);
 		request.setParam("parent_id", "0"); // TODO to indicate this is a new subject a just a sub response to a parent subject

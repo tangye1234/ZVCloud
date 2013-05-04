@@ -29,7 +29,6 @@ import org.apache.http.params.HttpParams;
 
 import com.zigvine.android.http.HttpManager;
 
-import android.net.Uri;
 import android.util.Log;
 
 
@@ -51,9 +50,8 @@ public class NetworkResourceLoader {
      * @return the input stream to read from
      * @throws IOException
      */
-    public HttpResponse load (Uri uri) throws IOException{
-        if (DEBUG) Log.d(TAG, "Requesting: " + uri);
-        HttpGet httpGet = new HttpGet(uri.toString());
+    public HttpResponse load (HttpGet httpGet) throws IOException{
+        if (DEBUG) Log.d(TAG, "Requesting: " + httpGet.getURI().toASCIIString());
         httpGet.addHeader("Accept-Encoding", "gzip");
         
         HttpParams params = httpGet.getParams();
@@ -62,7 +60,7 @@ public class NetworkResourceLoader {
         }
         
         ConnManagerParams.setTimeout(params, 20000);
-        return HttpManager.getMessageManager().nativeExecute(httpGet);
+        return HttpManager.getImageHttpManager().nativeExecute(httpGet);
 
     }
 

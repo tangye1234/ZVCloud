@@ -236,6 +236,8 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 		}
 		super.finish();
 		overridePendingTransition(R.anim.static_anim, R.anim.slide_out_to_right);
+		HttpImageManager imageManager = MainApp.getHttpImageManager();
+		imageManager.cleanManagedHttpGet();
 	}
 
 	public void onLoadMore(boolean scrollEnd) {
@@ -312,7 +314,8 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 					if (photourl == null) {
 						topicView.findViewById(R.id.forum_image_frame).setVisibility(View.GONE);
 					} else {
-						photourl = Request.HOST + photourl;
+						//photourl = Request.HOST + photourl;
+						photourl = Request.getImageUrl(photourl, 0);
 						final Uri uri = Uri.parse(photourl);
 						topicView.findViewById(R.id.forum_image_frame).setVisibility(View.VISIBLE);
 						Bitmap bitmap = null;
@@ -339,7 +342,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 								return false;
 							}
 							
-						}));
+						}), true);
 						if (bitmap != null) {
 							showBitmapForView(iv, bitmap);
 						}
@@ -472,7 +475,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 	private void sendNow(final String postT, final String postC, final File upload) {
 		UI.hideInputMethod();
 		findViewById(R.id.subforum_submit).setEnabled(false);
-		final Request request = new Request(Request.SUBMITCONSU);
+		final Request request = new Request(Request.SubmitConsu);
 		request.setParam("subject", postT);
 		request.setParam("content", postC);
 		request.setParam("parent_id", mPID + ""); // TODO to indicate this is a new subject a just a sub response to a parent subject

@@ -36,6 +36,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 
 import com.zigvine.android.http.HttpManager;
@@ -236,6 +237,10 @@ public class HttpImageManager{
     static public BitmapCache createDefaultMemoryCache() {
         return new BasicBitmapCache(DEFAULT_CACHE_SIZE);
     }
+    
+    public Bitmap loadImage(LoadRequest r) {
+    	return loadImage(r, false);
+    }
 
 
     public Bitmap loadImage(Uri uri) {
@@ -248,7 +253,7 @@ public class HttpImageManager{
      * @param r
      * @return
      */
-    public Bitmap loadImage( LoadRequest r ) {
+    public Bitmap loadImage( LoadRequest r, boolean isManaged) {
         if(r == null || r.getUri() == null || TextUtils.isEmpty(r.getUri().toString())) 
             throw new IllegalArgumentException( "null or empty request");
 
@@ -266,14 +271,13 @@ public class HttpImageManager{
         }
         else { 
             // not ready yet, try to retrieve it asynchronously.
-            mExecutor.execute( newRequestCall(r));
+            mExecutor.execute( newRequestCall(r, isManaged));
             return null;
         }
     }
 
-
     ////PRIVATE
-    private Runnable newRequestCall(final LoadRequest request) {
+    private Runnable newRequestCall(final LoadRequest request, final boolean isManaged) {
         return new Runnable() {
 
             public void run() {
@@ -283,7 +287,7 @@ public class HttpImageManager{
                     final ImageView iv = request.getImageView();
                     synchronized ( iv ) {
                         if ( request.getUri() != iv.getTag() ) {
-                            if(DEBUG)  Log.d(TAG, "give up loading: " + request.getUri().toString());
+                            if(DEBUG)  Log.w(TAG, "give up loading: " + request.getUri().toString());
                             return;
                         }
                     }
@@ -328,35 +332,51 @@ public class HttpImageManager{
                             long millis = System.currentTimeMillis();
                             
                             byte[] binary = null;
-                            HttpResponse httpResp = mNetworkResourceLoader.load(request.getUri());
-
-                            if(DEBUG) {
-                                Header[] headers = httpResp.getAllHeaders();
-                                for (Header header :headers) {
-                                    Log.i(TAG, header.toString());
-                                }
+                            HttpGet httpGet = new HttpGet(request.getUri().toString());
+                            if (isManaged) {
+                            	synchronized(mManagedHttpGet) {
+                            		mManagedHttpGet.add(httpGet);
+                            		if(DEBUG) Log.d(TAG, httpGet.getURI() + " is establised");
+                            	}
                             }
-
-                            HttpEntity entity = httpResp.getEntity();
-                            if (entity != null) {
-                                InputStream responseStream = entity.getContent();
-                                try {
-                                    Header header = entity.getContentEncoding();
-                                    if (header != null && header.getValue() != null && header.getValue().contains("gzip")) {
-                                        responseStream =  new GZIPInputStream(responseStream);
-                                    }
-
-                                    responseStream = new FlushedInputStream(responseStream); //patch the inputstream
-                                    
-                                    long contentSize = entity.getContentLength();
-                                    binary = readInputStreamProgressively(responseStream, (int)contentSize, request);
-                                    data = BitmapUtil.decodeByteArray(binary, mMaxNumOfPixelsConstraint);
-                                } 
-                                finally {
-                                    if(responseStream != null) {
-                                        try { responseStream.close(); } catch (IOException e) {}
-                                    }
-                                }
+                            try {
+	                            HttpResponse httpResp = mNetworkResourceLoader.load(httpGet);
+	
+	                            if(DEBUG) {
+	                                Header[] headers = httpResp.getAllHeaders();
+	                                for (Header header :headers) {
+	                                    Log.i(TAG, header.toString());
+	                                }
+	                            }
+	
+	                            HttpEntity entity = httpResp.getEntity();
+	                            if (entity != null) {
+	                                InputStream responseStream = entity.getContent();
+	                                try {
+	                                    Header header = entity.getContentEncoding();
+	                                    if (header != null && header.getValue() != null && header.getValue().contains("gzip")) {
+	                                        responseStream =  new GZIPInputStream(responseStream);
+	                                    }
+	
+	                                    responseStream = new FlushedInputStream(responseStream); //patch the inputstream
+	                                    
+	                                    long contentSize = entity.getContentLength();
+	                                    binary = readInputStreamProgressively(responseStream, (int)contentSize, request);
+	                                    data = BitmapUtil.decodeByteArray(binary, mMaxNumOfPixelsConstraint);
+	                                } 
+	                                finally {
+	                                    if(responseStream != null) {
+	                                        try { responseStream.close(); } catch (IOException e) {}
+	                                    }
+	                                }
+	                            }
+                            } finally {
+                            	if (isManaged) {
+                            		synchronized(mManagedHttpGet) {
+                            			mManagedHttpGet.remove(httpGet);
+                            			if(DEBUG) Log.d(TAG, httpGet.getURI() + " is disconnected");
+                            		}
+                            	}
                             }
 
                             if(data == null) 
@@ -414,7 +434,7 @@ public class HttpImageManager{
                     fireLoadFailure(request, e);
                     if(DEBUG) Log.e(TAG, "error handling request " + request.getUri(), e);
                     if (e instanceof ConnectionPoolTimeoutException) {
-                    	HttpManager.clean();
+                    	HttpManager.getImageHttpManager().clean();
                     }
                 }
                 finally{
@@ -427,6 +447,17 @@ public class HttpImageManager{
                 }
             }
         };
+    }
+    
+    /**
+     * clear all managed http get, to abort all these get method to release connection
+     */
+    public void cleanManagedHttpGet() {
+    	synchronized(mManagedHttpGet) {
+			for(HttpGet httpGet : mManagedHttpGet) {
+				httpGet.abort();
+			}
+		}
     }
 
 
@@ -530,8 +561,9 @@ public class HttpImageManager{
     private NetworkResourceLoader mNetworkResourceLoader = new NetworkResourceLoader(); 
 
     private Handler mHandler = new Handler();
-    private ThreadPoolExecutor mExecutor = new ThreadPoolExecutor(1, 4, 10, TimeUnit.SECONDS, new LinkedBlockingStack<Runnable>());
+    private ThreadPoolExecutor mExecutor = new ThreadPoolExecutor(1, 2, 10, TimeUnit.SECONDS, new LinkedBlockingStack<Runnable>());
     private Set<LoadRequest> mActiveRequests = new HashSet<LoadRequest>();
+    private Set<HttpGet> mManagedHttpGet = new HashSet<HttpGet>();
     private BitmapFilter mFilter;
 
     

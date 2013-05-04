@@ -209,7 +209,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 	
 	private void initAllData() {
 		mPID = 0;
-		mCount = 5;
+		mCount = 6;
 		mReachEnd = false;
 		list.setPullLoadEnable(false);
 		adapter.notifyDataSetInvalidated();
@@ -275,6 +275,13 @@ public class ForumActivity extends UIActivity<ForumActivity>
 				overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
 				break;
 		}
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		HttpImageManager imageManager = MainApp.getHttpImageManager();
+		imageManager.cleanManagedHttpGet();
 	}
 	
 	@Override
@@ -422,7 +429,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 					convertView.findViewById(R.id.forum_image_frame).setVisibility(View.GONE);
 					iv.setImageResource(R.color.transparent);
 				} else {
-					photourl = Request.HOST + photourl;
+					photourl = Request.getImageUrl(photourl, 0);
 					convertView.findViewById(R.id.forum_image_frame).setVisibility(View.VISIBLE);
 					HttpImageManager imageManager = MainApp.getHttpImageManager();
 					final Uri uri = Uri.parse(photourl);
@@ -453,7 +460,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 							return false;
 						}
 						
-					}));
+					}), true);
 					if (bitmap != null) {
 						showBitmapForView(g, iv, bitmap);
 					}
@@ -550,6 +557,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 					return;
 				}
 			}
+			adapter.notifyDataSetChanged();
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}

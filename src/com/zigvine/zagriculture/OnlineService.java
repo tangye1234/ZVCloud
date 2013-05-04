@@ -21,7 +21,7 @@ import android.support.v4.app.NotificationCompat;
 public class OnlineService extends Service implements Runnable, ResponseListener {
 	
 	public static final String FOREGROUND_EXTRA = "com.zigvine.zagriculture.service_foreground";
-	public static final long GET_ALARM_PERIOD = 5 * 2 * 1000;  // 5 mins
+	public static final long GET_ALARM_PERIOD = 5 * 60 * 1000;  // 5 mins
 	
 	int requestId;
 	Handler handler;

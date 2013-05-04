@@ -68,7 +68,8 @@ public class Request {
 	public static final String DataChart = "/datachart";
 	public static final String LogOff = "/logoff";
 	public static final String GetConsu = "/getconsu";
-	public static final String SUBMITCONSU = "/submitconsu";
+	public static final String SubmitConsu = "/submitconsu";
+	public static final String GetImage = "/getimage";
 	
 	private HttpManager httpManager;
 	private HttpRequestBase httpRequest;
@@ -83,6 +84,17 @@ public class Request {
 	private boolean isGetRequest;
 	private boolean requestDone;
 	private boolean DBG;
+	
+	public static String getImageUrl(String photourl, int level) {
+		if (photourl != null) {
+			int index = photourl.lastIndexOf("/") + 1;
+			photourl = photourl.substring(index);
+			try {
+				return URL + GetImage + "?image=" + URLEncoder.encode(photourl, HTTP.UTF_8) + "&level=" + level;
+			} catch (UnsupportedEncodingException e) {}
+		}
+		return photourl;
+	}
 	
 	public static class Resp /**FIXME serialized ?**/ {
 		public JSONObject json;
@@ -229,6 +241,7 @@ public class Request {
 			} catch (ClientProtocolException e) {
 				exception = e;
 			} catch (IOException e) {
+				if (DBG) log("url=" + httpRequest.getURI() + ", pool size=" + httpManager.getConnectionsInPool());
 				exception = e;
 			} catch (IllegalStateException e) {
 				exception = new IOException();
@@ -352,7 +365,7 @@ public class Request {
 			return "服务器证书验证失败，请联系客服";
 		} else {
 			if (e instanceof ConnectionPoolTimeoutException) {
-            	HttpManager.clean();
+				httpManager.clean();
             }
 			return "您的网络不给力啊";
 		}

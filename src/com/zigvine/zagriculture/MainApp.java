@@ -41,6 +41,7 @@ public class MainApp extends Application {
 		super.onCreate();
 		instance = this;
 		HttpManager.createMessageManager(this);
+		HttpManager.createImageHttpManager(this);
 		apilevel = android.os.Build.VERSION.SDK_INT;
 		version = "unkown";
 		try {
@@ -107,12 +108,14 @@ public class MainApp extends Application {
 	public void onLowMemory() {
 		super.onLowMemory();
 		HttpManager.destroyMessageManager();
+		HttpManager.destroyImageHttpManager();
 	}
 	
 	@Override
 	public void onTerminate() {
 		super.onTerminate();
 		HttpManager.destroyMessageManager();
+		HttpManager.destroyImageHttpManager();
 		instance = null;
 	}
 	

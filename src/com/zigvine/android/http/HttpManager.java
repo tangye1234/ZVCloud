@@ -37,9 +37,46 @@ public class HttpManager {
 	public static final String TAG = "HttpManager";
 	
 	/**
-	 * http message manager
+	 * http message manager and image manager
 	 */
 	private static HttpManager httpManager;
+	private static HttpManager imageHttpManager;
+	/**
+	 * http shared cookie
+	 */
+	private static BasicHttpContext httpContext;
+
+	public static void createImageHttpManager(Context context) {
+		if (imageHttpManager == null) {
+			HttpParams params = new BasicHttpParams();
+	        // 设置一些基本参数
+	        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+	        HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
+	        //HttpProtocolParams.setUseExpectContinue(params, true);
+	        //HttpProtocolParams.setUserAgent(params, MainApp.getAgent());
+	        // 超时设置
+	        Resources res = context.getResources();
+	        ConnManagerParams.setTimeout(params, res.getInteger(R.integer.connection_manager_timeout));
+	        HttpConnectionParams.setConnectionTimeout(params, res.getInteger(R.integer.connection_timeout));
+	        HttpConnectionParams.setSoTimeout(params, res.getInteger(R.integer.socket_timeout));
+			
+			SchemeRegistry schReg = new SchemeRegistry();
+			schReg.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+	        ClientConnectionManager connMgr = new ThreadSafeClientConnManager(params, schReg);
+	        imageHttpManager = new HttpManager(connMgr, params);
+		}
+	}
+	
+	public static void destroyImageHttpManager() {
+		if (imageHttpManager != null) {
+			imageHttpManager.connMgr.shutdown();
+			// FIXME how to recreate
+		}
+	}
+	
+	public static HttpManager getImageHttpManager() {
+		return imageHttpManager;
+	}
 	
 	public static void createMessageManager(Context context) {
 		if (httpManager == null) {
@@ -75,13 +112,14 @@ public class HttpManager {
 	
 	//private Context mContext; /*Application Context*/
 	private ClientConnectionManager connMgr;
-	private BasicHttpContext httpContext;
 	private HttpClient httpClient;
 	
 	private HttpManager(ClientConnectionManager ccm, HttpParams params) {
 		httpClient = new DefaultHttpClient(ccm, params);
-		httpContext = new BasicHttpContext();
-		httpContext.setAttribute(ClientContext.COOKIE_STORE, new BasicCookieStore());
+		if (httpContext == null) { // shared cookie, fisrt time init
+			httpContext = new BasicHttpContext();
+			httpContext.setAttribute(ClientContext.COOKIE_STORE, new BasicCookieStore());
+		}
 		connMgr = ccm;
 	}
 	
@@ -112,11 +150,13 @@ public class HttpManager {
 		return null;
 	}
 	
-	public static void clean() {
-		if (httpManager != null) {
-			httpManager.connMgr.closeExpiredConnections();
-			httpManager.connMgr.closeIdleConnections(20, TimeUnit.SECONDS);
-		}
+	public void clean() {
+		connMgr.closeExpiredConnections();
+		connMgr.closeIdleConnections(20, TimeUnit.SECONDS);
+	}
+	
+	public int getConnectionsInPool() {
+		return ((ThreadSafeClientConnManager) connMgr).getConnectionsInPool();
 	}
 	
 }
