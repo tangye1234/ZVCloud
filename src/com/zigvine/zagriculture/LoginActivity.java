@@ -230,7 +230,7 @@ public class LoginActivity extends UIActivity<LoginActivity>
 		
 		load.setText(R.string.signin_loading);
 		request = new Request(NORMAL_LOGIN ? "/verify" : Request.MobileBound);
-		request.setDebug(true);
+		request.setDebug(false);
 		request.setJSONEntity(requestJson);
 		request.asyncRequest(this, VERIFY_ID);
 		
