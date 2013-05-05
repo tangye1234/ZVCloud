@@ -52,6 +52,10 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 			finish();
 			return;
 		}
+		if (MainApp.needUpgrade()) {
+			MainApp.quitSession();
+			super.finish();
+		}
 		UI.startOnlineService(false);
 	}
 

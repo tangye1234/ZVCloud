@@ -14,6 +14,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -74,10 +77,11 @@ public class OnlineService extends Service implements Runnable, ResponseListener
     		isForeground = false;
     		stopForeground(true);
     		GET_ALARM_PERIOD = SettingsActivity.getPeriod(this);
-    		android.util.Log.d("OnlineService", "period=" + GET_ALARM_PERIOD);
+    		//android.util.Log.d("OnlineService", "period=" + GET_ALARM_PERIOD);
     		if (GET_ALARM_PERIOD <= 0) {
     			isRequestStarted = false;
     			++requestId;
+    			handler.removeCallbacks(this);
     		} else if (!isRequestStarted) {
     			isRequestStarted = true;
     			run();
@@ -90,9 +94,14 @@ public class OnlineService extends Service implements Runnable, ResponseListener
     public void run() {
     	if (MainApp.isSignIn()) {
 	    	Request request = new Request(Request.GetAlarm, true);
+	    	request.setDebug(true);
 	    	request.asyncRequest(this, ++requestId);
 	    	handler.removeCallbacks(this);
-	    	handler.postDelayed(this, GET_ALARM_PERIOD);
+	    	if (GET_ALARM_PERIOD > 0) {
+	    		handler.postDelayed(this, GET_ALARM_PERIOD);
+	    	} else {
+	    		isRequestStarted = false;
+	    	}
     	} else {
     		isRequestStarted = false;
     	}
@@ -141,6 +150,12 @@ public class OnlineService extends Service implements Runnable, ResponseListener
         .setContentIntent(pi)
         .build();
 		if (count > 0 && ticker) {
+			String r = SettingsActivity.getRingtone(this);
+			if (r != null && r.length() > 0) {
+				Uri uri = Uri.parse(r);
+				Ringtone ring = RingtoneManager.getRingtone(this, uri);
+				ring.play();
+			}
 			noti.tickerText = "监控有" + count + "个报警";
 		}
 		startForeground(icon, noti);

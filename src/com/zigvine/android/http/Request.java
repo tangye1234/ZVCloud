@@ -55,7 +55,7 @@ public class Request {
 		if (GLOBAL_DBG) {
 			HOST = "http://218.246.112.92";
 		} else {
-			HOST = "http://www.zigvine.com";
+			HOST = "http://218.246.112.92";
 		}
 	}
 	public static final String URL = HOST + "/dservice";

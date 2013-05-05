@@ -157,7 +157,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 		}
 		
 		mPID = intent.getLongExtra(EXTRA_PID, 0l);
-		mCount = 6;
+		mCount = 12;
 		mReachEnd = false;
 		cachedData = new DataArray(null);
 		adapter.notifyDataSetChanged();

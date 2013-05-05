@@ -35,6 +35,10 @@ public class MainApp extends Application {
     
     private static int checkstate = UNCHECKED; 
     private Thread updatethread = null;
+    
+    public static boolean needUpgrade() {
+        return checkstate == CHECKED_NEED_UPGRADE;
+    }
 	
 	@Override
 	public void onCreate() {

@@ -1,7 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    <CheckBoxPreference android:key="alarm_switch" android:title="告警开关" android:summaryOff="告警已关闭" android:summaryOn="告警已打开" android:defaultValue="true"/>
-    <ListPreference android:key="alarm_frequency" android:title="告警频率" android:dependency="alarm_switch" android:entryValues="@array/settings_frequency_entry_values" android:entries="@array/settings_frequency_entries" android:defaultValue="300000"/>
-    
+
+    <PreferenceCategory android:title="告警设置" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="alarm_switch"
+            android:summaryOff="告警已关闭"
+            android:summaryOn="告警已打开"
+            android:title="告警开关" />
+
+        <ListPreference
+            android:defaultValue="300000"
+            android:dependency="alarm_switch"
+            android:entries="@array/settings_frequency_entries"
+            android:entryValues="@array/settings_frequency_entry_values"
+            android:key="alarm_frequency"
+            android:title="告警检测频率" />
+
+        <RingtonePreference
+            android:dependency="alarm_switch"
+            android:key="alarm_sound"
+            android:ringtoneType="notification"
+            android:showDefault="true"
+            android:showSilent="true"
+            android:title="告警提示音" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="其他设置" >
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/settings_monitorbg_entries"
+            android:entryValues="@array/settings_monitorbg_entry_values"
+            android:key="monitor_bg"
+            android:title="监控页面背景" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

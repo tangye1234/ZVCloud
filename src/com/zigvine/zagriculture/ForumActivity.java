@@ -214,8 +214,12 @@ public class ForumActivity extends UIActivity<ForumActivity>
 		list.setPullLoadEnable(false);
 		adapter.notifyDataSetInvalidated();
 		cachedData = null;
-		list.showRefresh();
-		onRefresh();
+		list.postDelayed(new Runnable() {
+			public void run() {
+				list.showRefresh();
+				onRefresh();
+			}
+		}, 500);
 	}
 	
 	/**

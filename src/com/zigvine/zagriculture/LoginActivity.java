@@ -57,6 +57,14 @@ public class LoginActivity extends UIActivity<LoginActivity>
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		if(MainApp.needUpgrade()){
+			Intent intent = new Intent(this, UpdateActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+            super.startActivity(intent);
+            super.finish();
+            return;
+		}
+		
 		if (MainApp.isSignIn()) {
 			Intent intent = new Intent(this, MainActivity.class);
 			Bundle b = getIntent().getExtras();

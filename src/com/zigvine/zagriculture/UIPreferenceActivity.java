@@ -53,6 +53,10 @@ abstract public class UIPreferenceActivity<T extends UIPreferenceActivity<?>> ex
 			finish();
 			return;
 		}
+		if (MainApp.needUpgrade()) {
+			MainApp.quitSession();
+			super.finish();
+		}
 		UI.startOnlineService(false);
 	}
 

@@ -71,7 +71,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		UI.setBackNavVisibility(View.VISIBLE);
 		UI.setupFooterView();
 		//UI.setMainBackground(R.drawable.main_bg_blur);
-		UI.setMainBackground(R.drawable.main_bg_blue);
+		UI.setParentBackground(SettingsActivity.getMonitorBackgroundResourceId(this));
 		
 		mMonitorPager = new MonitorPager(this);
 		mControlPager = new ControlPager(this);
@@ -163,6 +163,7 @@ public class MainActivity extends UIActivity<MainActivity>
 	protected void onResume() {
 		super.onResume();
 		MainApp.registerAlarmReceiver(this, true);
+		UI.setParentBackground(SettingsActivity.getMonitorBackgroundResourceId(this));
 		if (!refreshOnStart) {
 			// FIXME if the interval is too short, we no longer need refresh
 			if (pages[currentPos] != null) {
