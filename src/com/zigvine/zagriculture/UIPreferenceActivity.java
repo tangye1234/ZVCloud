@@ -50,7 +50,7 @@ abstract public class UIPreferenceActivity<T extends UIPreferenceActivity<?>> ex
 	protected void onResume() {
 		super.onResume();
 		if (UI.needSignIn && !MainApp.isSignIn()) {
-			finish();
+			super.finish();
 			return;
 		}
 		if (MainApp.needUpgrade()) {

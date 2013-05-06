@@ -49,7 +49,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
 	protected void onResume() {
 		super.onResume();
 		if (UI.needSignIn && !MainApp.isSignIn()) {
-			finish();
+			super.finish();
 			return;
 		}
 		if (MainApp.needUpgrade()) {
