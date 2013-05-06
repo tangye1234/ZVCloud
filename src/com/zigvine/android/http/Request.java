@@ -92,7 +92,8 @@ public class Request {
 			int index = photourl.lastIndexOf("/") + 1;
 			photourl = photourl.substring(index);
 			try {
-				return URL + GetImage + "?image=" + URLEncoder.encode(photourl, HTTP.UTF_8) + "&level=" + level;
+				return URL + GetImage + "?image=" +
+						URLEncoder.encode(photourl, HTTP.UTF_8) + "&level=" + level;
 			} catch (UnsupportedEncodingException e) {}
 		}
 		return photourl;
@@ -244,7 +245,10 @@ public class Request {
 			} catch (ClientProtocolException e) {
 				exception = e;
 			} catch (IOException e) {
-				if (DBG) log("url=" + httpRequest.getURI() + ", pool size=" + httpManager.getConnectionsInPool());
+				if (DBG) {
+					log("url=" + httpRequest.getURI() + ", pool size=" +
+							httpManager.getConnectionsInPool());
+				}
 				exception = e;
 			} catch (IllegalStateException e) {
 				exception = new IOException();
@@ -332,7 +336,8 @@ public class Request {
 	}
 	
 	public final void setJSONEntity(JSONObject json) {
-		if (isGetRequest) throw new IllegalArgumentException("Get request should not contain a json object entity");
+		if (isGetRequest)
+			throw new IllegalArgumentException("Get request should not contain a json object entity");
 		httpRequest.addHeader("Content-Type", "application/json");
 		requestJson = json;
 		// ((HttpPost) httpRequest).setEntity(new StringEntity(requestJson.toString()));
