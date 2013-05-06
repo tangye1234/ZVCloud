@@ -5,7 +5,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     
     <!-- Default sliding menu arguments. -->
-    <dimen name="sliding_menu_shadow_width">36dp</dimen>
+    <dimen name="sliding_menu_shadow_width">10dp</dimen>
     <dimen name="sliding_menu_offset">80dp</dimen>
     
     <!-- Default main frame title and footer height -->
