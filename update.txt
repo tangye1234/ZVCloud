@@ -1,9 +1,9 @@
 com.zigvine.zagriculture
-ZVCloud.1.6
+ZVCloud.1.91
 2.4MB
-http://www.zigvine.com/dservice/apk/ZVCloud-1.6.apk
+http://www.zigvine.com/dservice/apk/ZVCloud-1.91.apk
 新版本更新介绍
   1. 增加了设置选项
-  2. 增加了更新模块
-  3. 改变了登录模块
+  2. 优化的图片下载
+  3. 修复若干错误
 
