@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.slidingmenu.lib.SlidingMenu;
+import com.zigvine.android.http.Request;
 import com.zigvine.android.widget.Pager;
 import com.zigvine.zagriculture.MainApp.UpdateCheckListener;
 
@@ -461,7 +462,7 @@ abstract public class UIActivity<T extends UIActivity<?>> extends android.app.Ac
                 showAboutDialog();
                 return true;
             case R.id.menu_license:
-            	UI.startWebSite("http://www.zigvine.com");
+            	UI.startWebSite(Request.AgreementPage);
             	return true;
             case R.id.menu_update:
             	manualUpdateCheck();

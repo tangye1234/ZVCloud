@@ -48,6 +48,7 @@ import android.util.Log;
 
 public class Request {
 	
+	public static final String AgreementPage = "http://www.zigvine.com/mobile_agre.html";
 	public static final boolean GLOBAL_DBG = false; /* FIXME set to false to avoid info leaks */
 	public static final String TAG = Request.class.getSimpleName();
 	public static final String HOST;
