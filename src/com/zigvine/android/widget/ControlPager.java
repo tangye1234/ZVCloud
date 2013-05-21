@@ -322,14 +322,12 @@ public class ControlPager extends Pager
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			if (convertView == null) {
-				convertView =  View.inflate(activity, R.layout.monitor_item, null);
+				convertView =  View.inflate(activity, R.layout.control_item, null);
 			}
-			TextView dname = (TextView) convertView.findViewById(R.id.device_name);
 			TextView qname = (TextView) convertView.findViewById(R.id.quota_name);
 			TextView qvalue = (TextView) convertView.findViewById(R.id.quota_value);
 			TextView time = (TextView) convertView.findViewById(R.id.monitor_time);
 			ImageView qid = (ImageView) convertView.findViewById(R.id.quotaId);
-			View alarm = convertView.findViewById(R.id.alarm_mark);
 			View progressbar = convertView.findViewById(R.id.item_progressbar);
 			boolean isEnabled = isItemEnabled(position);
 			if (isEnabled) {
@@ -339,7 +337,6 @@ public class ControlPager extends Pager
 				progressbar.setVisibility(View.VISIBLE);
 				convertView.setClickable(true);
 			}
-			alarm.setVisibility(View.GONE);
 			if (position == 0) {
 				convertView.setBackgroundResource(R.drawable.pageritem_bg_top);
 			} else {
@@ -350,12 +347,11 @@ public class ControlPager extends Pager
 				JSONObject json = gd.json;
 				if (json != null) {
 					String s = json.getString("deviceName");
-					dname.setText(s);
 					JSONArray arr = json.getJSONArray("quota");
-					s = arr.getString(0);
+					//s = arr.getString(0);
 					qname.setText(s);
-					s = json.getString("stateDesc");
-					qvalue.setText("状态：" + s);
+					s =  arr.getString(0) + ":" + json.getString("stateDesc");
+					qvalue.setText(s);
 					s = json.getString("date");
 					time.setText(s);
 					int id = json.getInt("quotaID");
