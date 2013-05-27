@@ -356,6 +356,7 @@ public class ControlPager extends Pager
 					time.setText(s);
 					int id = json.getInt("quotaID");
 					qid.setImageResource(Quota.ICONS[id]);
+					int portid = json.getInt("num");
 					final ViewGroup ch = (ViewGroup) convertView.findViewById(R.id.control_items);
 					ch.removeAllViews();
 					arr = json.getJSONArray("cmdList");
@@ -379,7 +380,7 @@ public class ControlPager extends Pager
 						tv.setText(name);
 						tv.setBackgroundResource(R.drawable.title_btn);
 						tv.setOnClickListener(this);
-						tv.setTag(new int[] {position, status});
+						tv.setTag(new int[] {position, status, portid});
 						ch.addView(tv);
 					}
 					
@@ -427,6 +428,7 @@ public class ControlPager extends Pager
 			int[] data = (int[]) tv.getTag();
 			final int position = data[0];
 			final int state = data[1];
+			final int portid = data[2];
 			final long groupid = currentGroup;
 			if (!isItemEnabled(position)) return; // cannot operate on disabled item
 			final Object obj = getItem(position);
@@ -455,6 +457,7 @@ public class ControlPager extends Pager
 					request.setSoTimeout(30000); // a must for that
 					request.setParam("deviceID", deviceID);
 					request.setParam("state", String.valueOf(state));
+					request.setParam("portid", String.valueOf(portid));
 					request.asyncRequest(MonitorAdapter.this, position, json.hashCode(), groupid);
 					// TODO ..... disable position
 					setItemEnabled(groupid, position, false);
