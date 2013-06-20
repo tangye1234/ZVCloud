@@ -473,6 +473,7 @@ public class ControlPager extends Pager
 			Object o = null;
 			String devID = "";
 			int lastState = -1;
+			int portid = -1;
 			int refreshCount = 0;
 			GroupData g = null;
 			if (obj.length > 2) {
@@ -487,6 +488,7 @@ public class ControlPager extends Pager
 						o = g.json;
 						devID = g.json.getString("deviceID");
 						lastState = g.json.getInt("state");
+						portid = g.json.getInt("num");
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -517,6 +519,8 @@ public class ControlPager extends Pager
 						final Request request = new Request(Request.GetControl, true);
 						request.setParam("devID", devID);
 						request.setParam("GroupID", String.valueOf(groupid));
+						request.setParam("portid", String.valueOf(portid));
+						request.setDebug(true);
 						final int R_id = id;
 						final long R_groupid = groupid;
 						final int R_hash = hash;
