@@ -10,7 +10,6 @@
         android:layout_margin="10dp"
         android:gravity="left"
         android:inputType="phone"
-        android:background="@drawable/input"
         android:padding="10dp" />
 
 </LinearLayout>

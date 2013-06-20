@@ -520,7 +520,6 @@ public class ControlPager extends Pager
 						request.setParam("devID", devID);
 						request.setParam("GroupID", String.valueOf(groupid));
 						request.setParam("portid", String.valueOf(portid));
-						request.setDebug(true);
 						final int R_id = id;
 						final long R_groupid = groupid;
 						final int R_hash = hash;
