@@ -304,6 +304,7 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 					JSONArray sensorList = json.getJSONArray("sensorList");
 					if (sensorList.length() > 0) {
 						json = sensorList.getJSONObject(0);
+						String quotaId = json.getString("quotaId");
 						JSONArray data = json.getJSONArray("dataList");
 						mUnit = json.getString("unit");
 						unitInfo.setText("单位：" + mUnit);
@@ -323,6 +324,14 @@ public class GraphDialog extends Dialog implements ViewSwitchListener, OnDismiss
 							float maxy = MathFloat.max(dy);
 							dyrange[0] = miny;
 							dyrange[1] = maxy;
+							if (quotaId.equalsIgnoreCase("4")) {
+								if (dyrange[0] - 200 < 0) {
+									dyrange[0] = 0;
+								} else {
+									dyrange[0] -= 200;
+								}
+								dyrange[1] += 200;
+							}
 						}
 						x.set(pos, dx);
 						y.set(pos, dy);
