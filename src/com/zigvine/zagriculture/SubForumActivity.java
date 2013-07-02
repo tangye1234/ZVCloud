@@ -222,7 +222,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 			case POST_ID:
 				intent = new Intent(this, PostActivity.class);
 				startActivityForResult(intent, POST_REQUEST);
-				overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
+				overridePendingTransition(R.anim.slide_in_from_right, R.anim.zoom_exit);
 				break;
 		}
 	}
@@ -235,7 +235,7 @@ public class SubForumActivity extends UIActivity<SubForumActivity>
 			setResult(RESULT_OK, intent);
 		}
 		super.finish();
-		overridePendingTransition(R.anim.static_anim, R.anim.slide_out_to_right);
+		overridePendingTransition(R.anim.zoom_enter, R.anim.slide_out_to_right);
 		HttpImageManager imageManager = MainApp.getHttpImageManager();
 		imageManager.cleanManagedHttpGet();
 	}

@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.zigvine.android.anim.AnimUtils;
+import com.zigvine.android.anim.Rotate3dAnimation;
 import com.zigvine.android.http.Request;
 import com.zigvine.android.http.Request.Resp;
 import com.zigvine.android.http.Request.ResponseListener;
@@ -27,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController.AnimationParameters;
 import android.widget.AdapterView;
@@ -195,6 +197,12 @@ public class ForumActivity extends UIActivity<ForumActivity>
 		list.setDividerHeight(0);
 		//list.setEmptyView(findViewById(R.id.monitor_empty));
 		//list.setLayoutAnimation(layoutAnim);
+		AnimationSet anim = (AnimationSet) AnimationUtils.loadAnimation(UI.getActivity(), R.anim.list_anim);
+		anim.addAnimation(new Rotate3dAnimation(45, 0, 0));
+		anim.setDuration(600);
+		android.view.animation.LayoutAnimationController lac = new android.view.animation.LayoutAnimationController(anim);
+		lac.setDelay(0.25f);
+		list.setLayoutAnimation(lac);
 		list.setPullRefreshEnable(true);
 		
 		list.setOnItemClickListener(this);
@@ -276,7 +284,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 			case POST_ID:
 				intent = new Intent(this, PostActivity.class);
 				startActivityForResult(intent, POST_REQUEST);
-				overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
+				overridePendingTransition(R.anim.slide_in_from_right, R.anim.zoom_exit);
 				break;
 		}
 	}
@@ -291,7 +299,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 	@Override
 	public void finish() {
 		super.finish();
-		overridePendingTransition(R.anim.static_anim, R.anim.slide_out_to_right);
+		overridePendingTransition(R.anim.zoom_enter, R.anim.slide_out_to_right);
 	}
 
 	@Override
@@ -377,7 +385,9 @@ public class ForumActivity extends UIActivity<ForumActivity>
 				convertView.clearAnimation();
 			}
 			if (g.animationState == 0) {
-				Animation anim = AnimationUtils.loadAnimation(UI.getActivity(), R.anim.list_anim);
+				AnimationSet anim = (AnimationSet) AnimationUtils.loadAnimation(UI.getActivity(), R.anim.list_anim);
+				anim.addAnimation(new Rotate3dAnimation(45, 0, 0));
+				anim.setDuration(600);
 				anim.setAnimationListener(new AnimationListener() {
 					@Override
 					public void onAnimationEnd(Animation animation) {
@@ -578,7 +588,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 			intent.putExtra(SubForumActivity.EXTRA_OBJ, g.json.toString());
 			startActivityForResult(intent, SUBPOST_REQUEST);
 			tmpIndex = pos;
-			overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
+			overridePendingTransition(R.anim.slide_in_from_right, R.anim.zoom_exit);
 		} else if (pos > 0) {
 			//UI.toast("加载中间的内容，请点击刷新");
 			DataItem last = (DataItem) adapter.getItem(pos - 1);

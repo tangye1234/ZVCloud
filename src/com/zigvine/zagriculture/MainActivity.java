@@ -211,7 +211,7 @@ public class MainActivity extends UIActivity<MainActivity>
 		case ASK_ID:
 			intent = new Intent(this, ForumActivity.class);
         	startActivity(intent);
-        	overridePendingTransition(R.anim.slide_in_from_right, R.anim.static_anim);
+        	overridePendingTransition(R.anim.slide_in_from_right, R.anim.zoom_exit);
         	break;
 		}
 	}
