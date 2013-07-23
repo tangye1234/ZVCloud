@@ -56,6 +56,7 @@ public class XListView extends ListView implements OnScrollListener {
 	private int mScrollBack;
 	private final static int SCROLLBACK_HEADER = 0;
 	private final static int SCROLLBACK_FOOTER = 1;
+	private final static int SCROLLSHOW_HEADER = 2;
 
 	private final static int SCROLL_DURATION = 400; // scroll back duration
 	private final static int PULL_LOAD_MORE_DELTA = 50; // when pull up >= 50px
@@ -226,7 +227,25 @@ public class XListView extends ListView implements OnScrollListener {
 		if (mPullRefreshing && height > mHeaderViewHeight) {
 			finalHeight = mHeaderViewHeight;
 		}
+		
+		if (!mScroller.isFinished() && mScrollBack == SCROLLSHOW_HEADER) {
+			mScroller.abortAnimation();
+			scrollTo(0, mScroller.getCurrY());
+		}
 		mScrollBack = SCROLLBACK_HEADER;
+		mScroller.startScroll(0, height, 0, finalHeight - height,
+				SCROLL_DURATION);
+		// trigger computeScroll
+		invalidate();
+	}
+	
+	private void showHeaderHeight() {
+		int height = mHeaderViewHeight;
+		if (height == 0) // not visible.
+			return;
+		int finalHeight = 0; // default: scroll back to dismiss header.
+		// is refreshing, just scroll back to show all the header.
+		mScrollBack = SCROLLSHOW_HEADER;
 		mScroller.startScroll(0, height, 0, finalHeight - height,
 				SCROLL_DURATION);
 		// trigger computeScroll
@@ -258,11 +277,13 @@ public class XListView extends ListView implements OnScrollListener {
 		}
 	}
 
-	private void startLoadMore() {
-		mPullLoading = true;
-		mFooterView.setState(XListViewFooter.STATE_LOADING);
-		if (mListViewListener != null) {
-			mListViewListener.onLoadMore();
+	public void startLoadMore() {
+		if (!mPullLoading) {
+			mPullLoading = true;
+			mFooterView.setState(XListViewFooter.STATE_LOADING);
+			if (mListViewListener != null) {
+				mListViewListener.onLoadMore();
+			}
 		}
 	}
 
@@ -316,15 +337,18 @@ public class XListView extends ListView implements OnScrollListener {
 		return super.onTouchEvent(ev);
 	}
 	
-	public void showRefresh() {
-		if (mEnablePullRefresh) {
+	public void startRefresh() {
+		if (mEnablePullRefresh && !mPullRefreshing) {
 			mPullRefreshing = true;
 			mHeaderView.setVisiableHeight(mHeaderViewHeight);
 			setSelection(0);
 			invokeOnScrolling();
 			mHeaderView.setState(XListViewHeader.STATE_REFRESHING);
+			if (mListViewListener != null) {
+				mListViewListener.onRefresh();
+			}
+			showHeaderHeight();
 		}
-		resetHeaderHeight();
 	}
 
 	@Override
@@ -332,8 +356,10 @@ public class XListView extends ListView implements OnScrollListener {
 		if (mScroller.computeScrollOffset()) {
 			if (mScrollBack == SCROLLBACK_HEADER) {
 				mHeaderView.setVisiableHeight(mScroller.getCurrY());
-			} else {
+			} else if (mScrollBack == SCROLLBACK_FOOTER){
 				mFooterView.setBottomMargin(mScroller.getCurrY());
+			} else {
+				scrollTo(0, mScroller.getCurrY());
 			}
 			postInvalidate();
 			invokeOnScrolling();

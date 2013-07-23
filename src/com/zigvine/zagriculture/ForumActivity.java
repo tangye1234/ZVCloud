@@ -224,8 +224,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 		cachedData = null;
 		list.postDelayed(new Runnable() {
 			public void run() {
-				list.showRefresh();
-				onRefresh();
+				list.startRefresh();
 			}
 		}, 500);
 	}
@@ -554,8 +553,7 @@ public class ForumActivity extends UIActivity<ForumActivity>
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == POST_REQUEST) {
 			if (resultCode == RESULT_OK) {
-				list.showRefresh();
-				onRefresh();
+				list.startRefresh();
 				return;
 			}
 		}
