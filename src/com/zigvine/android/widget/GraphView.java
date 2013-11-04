@@ -20,7 +20,7 @@ public class GraphView extends View {
 	private static final String TAG = "GroupView";
 	
 	protected Context mContext;
-	protected int width, height, dataH, wordH, dp;
+	protected int width, height, dataH, wordH, dp, pad;
 	private int[] x;
 	private float[] y;
 	private float YMIN, YMAX, YLEN;
@@ -29,7 +29,8 @@ public class GraphView extends View {
 	private long xOffset;
 	private Handler handler;
 	
-	private Paint mPaint, linePaint, axisPaint;
+	private Paint mPaint, linePaint, axisPaint, cirPaint;
+	private float fontHeight;
 
 	public GraphView(Context context) {
 		super(context);
@@ -50,6 +51,7 @@ public class GraphView extends View {
 		mContext = context;
 		wordH = Utils.dp2px(context, 40);
 		dp = Utils.dp2px(context, 2);
+		pad = Utils.dp2px(context, 10);
 		handler = new Handler();
 		Typeface tf = Typeface.createFromAsset(getContext().getAssets(),"fonts/eurostileRegular.ttf");
 		
@@ -66,10 +68,16 @@ public class GraphView extends View {
 		linePaint.setStrokeWidth(2);
 		linePaint.setColor(0xff1699cf);
 		
+		cirPaint = new Paint();
+		cirPaint.setAntiAlias(true);
+		cirPaint.setStrokeWidth(1);
+		cirPaint.setColor(0x77FFD700);
+		
 		axisPaint = new Paint();
 		axisPaint.setAntiAlias(true);
 		axisPaint.setStrokeWidth(1);
 		axisPaint.setColor(0xff26c3f7);
+		fontHeight = (float) Math.ceil(mPaint.getFontMetrics().descent - mPaint.getFontMetrics().ascent);
 	}
 	
 	/**
@@ -228,15 +236,54 @@ public class GraphView extends View {
 		c.save();
 		Rect rect = new Rect(0, 0, width, dataH - 1);  
 		c.clipRect(rect);
-		for (int i = 1; i < length; i++) {
-			if (x[i] < XMIN || x[i - 1] > XMAX) continue;
-			float startX = convertX(x[i - 1]);
-			float startY = convertY(y[i - 1]);
-			float stopX = convertX(x[i]);
-			float stopY = convertY(y[i]);
-			c.drawLine(startX, startY, stopX, stopY, linePaint);
+		if (length > 0) {
+			int txtXmin = x[0];
+			int txtXmax = x[0];
+			float txtYMin = y[0];
+			float txtYMax = y[0];
+			for (int i = 1; i < length; i++) {
+				if (x[i] < XMIN || x[i - 1] > XMAX) continue;
+				float startX = convertX(x[i - 1]);
+				float startY = convertY(y[i - 1]);
+				float stopX = convertX(x[i]);
+				float stopY = convertY(y[i]);
+				c.drawLine(startX, startY, stopX, stopY, linePaint);
+				if (y[i] > txtYMax) {
+					txtYMax = y[i];
+					txtXmax = x[i];
+				}
+				if (y[i] < txtYMin) {
+					txtYMin = y[i];
+					txtXmin = x[i];
+				}
+			}
+			if (length > 2) {
+				String text = "最高" + String.valueOf(txtYMax);
+				float txtWidth = mPaint.measureText(text);
+				c.drawCircle(convertX(txtXmax), convertY(txtYMax), 8, cirPaint);
+				float tx = convertX(txtXmax) - txtWidth / 2;
+				float ty = convertY(txtYMax) + fontHeight;
+				final float _f_ = pad;
+				final float _y_ = pad;
+				if (tx < _f_) tx = _f_;
+				else if (tx + txtWidth > width - _f_) tx = width - _f_ - txtWidth;
+				if (ty < _y_) ty = _y_;
+				else if (ty > dataH - fontHeight - _y_) ty = dataH - fontHeight - _y_;
+				c.drawText(text, tx, ty, mPaint);
+				if (txtXmax != txtXmin) {
+					text = "最低" + String.valueOf(txtYMin);
+					txtWidth = mPaint.measureText(text);
+					c.drawCircle(convertX(txtXmin), convertY(txtYMin), 8, cirPaint);
+					tx = convertX(txtXmin) - txtWidth / 2;
+					ty = convertY(txtYMin);
+					if (tx < _f_) tx = _f_;
+					else if (tx + txtWidth > width - _f_) tx = width - _f_ - txtWidth;
+					if (ty < _y_ + fontHeight) ty = _y_ + fontHeight;
+					else if (ty > dataH - _y_) ty = dataH - _y_;
+					c.drawText(text, tx, ty, mPaint);
+				}
+			}
 		}
-		
 		// word on the data
 		float starty = dataH / 3;
 		String ystr1 = new DecimalFormat("#0.00").format(getYValue(starty));
