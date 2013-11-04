@@ -94,7 +94,6 @@ public class OnlineService extends Service implements Runnable, ResponseListener
     public void run() {
     	if (MainApp.isSignIn()) {
 	    	Request request = new Request(Request.GetAlarm, true);
-	    	request.setDebug(true);
 	    	request.asyncRequest(this, ++requestId);
 	    	handler.removeCallbacks(this);
 	    	if (GET_ALARM_PERIOD > 0) {

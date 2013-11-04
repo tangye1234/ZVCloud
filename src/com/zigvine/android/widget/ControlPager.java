@@ -356,6 +356,7 @@ public class ControlPager extends Pager
 					time.setText(s);
 					int id = json.getInt("quotaID");
 					qid.setImageResource(Quota.ICONS[id]);
+					int portid = json.getInt("num");
 					final ViewGroup ch = (ViewGroup) convertView.findViewById(R.id.control_items);
 					ch.removeAllViews();
 					arr = json.getJSONArray("cmdList");
@@ -379,7 +380,7 @@ public class ControlPager extends Pager
 						tv.setText(name);
 						tv.setBackgroundResource(R.drawable.title_btn);
 						tv.setOnClickListener(this);
-						tv.setTag(new int[] {position, status});
+						tv.setTag(new int[] {position, status, portid});
 						ch.addView(tv);
 					}
 					
@@ -427,6 +428,7 @@ public class ControlPager extends Pager
 			int[] data = (int[]) tv.getTag();
 			final int position = data[0];
 			final int state = data[1];
+			final int portid = data[2];
 			final long groupid = currentGroup;
 			if (!isItemEnabled(position)) return; // cannot operate on disabled item
 			final Object obj = getItem(position);
@@ -455,6 +457,7 @@ public class ControlPager extends Pager
 					request.setSoTimeout(30000); // a must for that
 					request.setParam("deviceID", deviceID);
 					request.setParam("state", String.valueOf(state));
+					request.setParam("portid", String.valueOf(portid));
 					request.asyncRequest(MonitorAdapter.this, position, json.hashCode(), groupid);
 					// TODO ..... disable position
 					setItemEnabled(groupid, position, false);
@@ -470,6 +473,7 @@ public class ControlPager extends Pager
 			Object o = null;
 			String devID = "";
 			int lastState = -1;
+			int portid = -1;
 			int refreshCount = 0;
 			GroupData g = null;
 			if (obj.length > 2) {
@@ -484,6 +488,7 @@ public class ControlPager extends Pager
 						o = g.json;
 						devID = g.json.getString("deviceID");
 						lastState = g.json.getInt("state");
+						portid = g.json.getInt("num");
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -514,6 +519,7 @@ public class ControlPager extends Pager
 						final Request request = new Request(Request.GetControl, true);
 						request.setParam("devID", devID);
 						request.setParam("GroupID", String.valueOf(groupid));
+						request.setParam("portid", String.valueOf(portid));
 						final int R_id = id;
 						final long R_groupid = groupid;
 						final int R_hash = hash;

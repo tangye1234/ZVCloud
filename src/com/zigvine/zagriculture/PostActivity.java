@@ -219,7 +219,7 @@ public class PostActivity extends UIActivity<PostActivity>
 	@Override
 	public void finish() {
 		super.finish();
-		overridePendingTransition(R.anim.static_anim, R.anim.slide_out_to_right);
+		overridePendingTransition(R.anim.zoom_enter, R.anim.slide_out_to_right);
 	}
 
 	@Override
