@@ -18,6 +18,10 @@ import android.view.View;
 public class GraphView extends View {
 	
 	private static final String TAG = "GroupView";
+	private static final float RADIUS = 8; // 极值点半径px
+	private static final int R_COLOR = 0x551699cf; // 极值点的颜色，采用32位颜色，地一个字节是透明度，后面为24位颜色
+	private static final int F_COLOR_TOP = 0xffff0000; // 最高点的文字颜色
+	private static final int F_COLOR_BOTTOM = 0xff000080; // 最低点的文字颜色
 	
 	protected Context mContext;
 	protected int width, height, dataH, wordH, dp, pad;
@@ -71,7 +75,7 @@ public class GraphView extends View {
 		cirPaint = new Paint();
 		cirPaint.setAntiAlias(true);
 		cirPaint.setStrokeWidth(1);
-		cirPaint.setColor(0x77FFD700);
+		cirPaint.setColor(R_COLOR);
 		
 		axisPaint = new Paint();
 		axisPaint.setAntiAlias(true);
@@ -258,9 +262,10 @@ public class GraphView extends View {
 				}
 			}
 			if (length > 2) {
+				mPaint.setColor(F_COLOR_TOP);
 				String text = "最高" + String.valueOf(txtYMax);
 				float txtWidth = mPaint.measureText(text);
-				c.drawCircle(convertX(txtXmax), convertY(txtYMax), 8, cirPaint);
+				c.drawCircle(convertX(txtXmax), convertY(txtYMax), RADIUS, cirPaint);
 				float tx = convertX(txtXmax) - txtWidth / 2;
 				float ty = convertY(txtYMax) + fontHeight;
 				final float _f_ = pad;
@@ -271,6 +276,7 @@ public class GraphView extends View {
 				else if (ty > dataH - fontHeight - _y_) ty = dataH - fontHeight - _y_;
 				c.drawText(text, tx, ty, mPaint);
 				if (txtXmax != txtXmin) {
+					mPaint.setColor(F_COLOR_BOTTOM);
 					text = "最低" + String.valueOf(txtYMin);
 					txtWidth = mPaint.measureText(text);
 					c.drawCircle(convertX(txtXmin), convertY(txtYMin), 8, cirPaint);
@@ -284,6 +290,7 @@ public class GraphView extends View {
 				}
 			}
 		}
+		mPaint.setColor(0xff26c3f7);
 		// word on the data
 		float starty = dataH / 3;
 		String ystr1 = new DecimalFormat("#0.00").format(getYValue(starty));
