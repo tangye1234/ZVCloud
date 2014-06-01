@@ -27,7 +27,10 @@ public class Quota {
 		R.drawable.quota_winder,	//19
 		R.drawable.quota_plug,		//20
 		R.drawable.quota_pccontrol,	//21
-		R.drawable.quota_unkown		//22
+		R.drawable.quota_do,		//22
+		R.drawable.quota_power,		//23
+		R.drawable.quota_nh4,		//24
+		R.drawable.quota_unkown		//25
 	};
 
 }
